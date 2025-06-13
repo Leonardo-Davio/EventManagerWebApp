@@ -1,0 +1,180 @@
+<!DOCTYPE html><!--TODO dividi il codice ed aspetta le immagini da chat-->
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zero Gravity Events</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@300&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- Bootstrap Icons -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    /* ==== Palette & Typo ==== */
+    body {
+      background-color: #1A1A1A; /* Asphalt Dark */
+      color: #FFFFFF;
+      font-family: 'Montserrat', sans-serif;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Montserrat', sans-serif;
+    }
+    code, kbd, pre {
+      font-family: 'Inconsolata', monospace;
+    }
+
+    /* ==== Carbon Fiber Overlay per header & hero ==== */
+    .navbar, .section-hero {
+      background-color: #2C2C2C; /* Carbon Fiber base */
+      background-image: url('path/to/carbon-fiber.png');
+      background-size: 200px 200px;
+      background-blend-mode: overlay;
+    }
+
+    /* ==== Banner special grunge ==== */
+    .banner-special {
+      background:
+        linear-gradient(135deg, rgba(26,26,26,0.85) 0%, rgba(44,44,44,0.85) 100%),
+        url('path/to/grunge-texture.png') no-repeat center/cover;
+      color: #FFF;
+    }
+
+    /* ==== Button & link accents ==== */
+    .btn-primary {
+      background-color: #E53935; /* Racing Red */
+      border-color: #E53935;
+    }
+    .btn-primary:hover {
+      background-color: #D32F2F;
+      border-color: #D32F2F;
+    }
+    .text-accent {
+      color: #00BCD4 !important; /* Electric Cyan */
+    }
+    .text-accent:hover {
+      color: #008BA3 !important;
+    }
+
+    /* ==== Badge override ==== */
+    .badge-secondary {
+      background-color: #FF9800 !important; /* Burnt Orange */
+      color: #1A1A1A !important;
+    }
+  </style>
+</head>
+<body class="pt-5">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top shadow-sm py-2">
+    <div class="container-fluid">
+      <div class="row w-100 align-items-center">
+        <!-- Menu -->
+        <div class="col d-flex">
+          <ul class="navbar-nav flex-row">
+            <li class="nav-item me-3">
+              <a class="nav-link text-white" href="#eventi">Eventi</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#social">Social</a>
+            </li>
+          </ul>
+        </div>
+        <!-- Logo -->
+        <div class="col d-flex justify-content-center">
+          <a class="navbar-brand" href="/">
+            <img src="logo.png" alt="Zero Gravity Logo" height="40">
+          </a>
+        </div>
+        <!-- User area -->
+        <div class="col d-flex justify-content-end align-items-center">
+          <button id="loginBtn" class="btn btn-outline-primary btn-sm me-2" style="display: none;">
+            Login
+          </button>
+          <div id="userDropdown" class="dropdown" style="display: none;">
+            <a
+              class="btn btn-outline-secondary btn-sm dropdown-toggle"
+              href="#"
+              id="userMenuLink"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="bi bi-person-circle"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuLink">
+              <li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Simulazione Auth -->
+  <div class="container mt-4">
+    <button id="toggleAuth" class="btn btn-warning">Simula Auth</button>
+    <span id="statusBadge" class="badge bg-secondary ms-2">Non autenticato</span>
+  </div>
+
+  <!-- Hero section (con carbon fiber overlay) -->
+  <section class="section-hero text-center text-white py-5 mb-5">
+    <h1 class="display-4">Benvenuto a Zero Gravity Events</h1>
+    <p class="lead">La community per gli appassionati di moto e adrenalina.</p>
+  </section>
+
+  <!-- Contenuti di esempio -->
+  <section id="eventi" class="py-5 bg-dark text-white">
+    <div class="container">
+      <h2 class="mb-4">Eventi in arrivo</h2>
+      <!-- Card di esempio -->
+      <div class="card banner-special mb-4">
+        <div class="card-body">
+          <h5 class="card-title">MotoGP Night Ride</h5>
+          <p class="card-text">Unisciti a noi il 25 Giugno per una notte indimenticabile.</p>
+          <a href="#" class="btn btn-primary">Scopri di più</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="social" class="py-5 bg-secondary text-white">
+    <div class="container">
+      <h2 class="mb-4 text-accent">Seguici sui social</h2>
+      <!-- Icone social -->
+      <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
+      <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
+      <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
+    </div>
+  </section>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let isAuthenticated = false;
+    function updateUI() {
+      document.getElementById('loginBtn').style.display = isAuthenticated ? 'none' : 'block';
+      document.getElementById('userDropdown').style.display = isAuthenticated ? 'block' : 'none';
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = isAuthenticated ? 'Autenticato' : 'Non autenticato';
+      badge.className = 'badge ms-2 ' + (isAuthenticated ? 'badge-secondary bg-success' : 'badge-secondary bg-secondary');
+    }
+    document.getElementById('toggleAuth').addEventListener('click', () => {
+      isAuthenticated = !isAuthenticated;
+      updateUI();
+    });
+    updateUI();
+  </script>
+</body>
+</html>
