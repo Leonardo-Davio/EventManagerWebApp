@@ -1,3 +1,48 @@
-<!--{% extends 'main/base.html' %}
+{% extends 'main/base.html' %}
 
-fixme implementa il codice
+{% block menu %}
+    <div class="col d-flex">
+        <ul class="navbar-nav flex-row">
+            <li class="nav-item me-3">
+                <a class="nav-link text-white" href="#eventi">Eventi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#social">Social</a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <section class="section-hero text-center text-white py-5 mb-5">
+        <h1 class="display-4"> Benvenuto a Zero Gravity Events</h1>
+        <p class="lead">
+            La community per gli appassionati di moto e adrenalina.
+        </p>
+    </section>
+    <section id="eventi" class="py-5 bg-dark text-white">
+            <div class=" container">
+                <h2 class="text-center">Eventi in arrivo</h2>
+                <div class="row">
+                    {# Itera su tutti gli eventi futuri, non solo i primi 3 #}
+                    {% for event in events %}
+                        <a class="col-md-4 mb-4 text-decoration-none" href="{{event.url}}">
+                            <div class="card bg-secondary text-white h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <p class="card-text">{{ event.description }}</p>
+                                    <p class="card-text">
+                                        <small>Data: {{ event.date|date:"d/m/Y H:i" }}</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="col-12">
+                            <p class="text-center">Nessun evento futuro disponibile.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+    </section>
+{% endblock %}
