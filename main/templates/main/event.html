@@ -1,0 +1,97 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block CustomStyle %}
+    .containerBody{
+    background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{{ event.image.url }}');
+    background-size: cover;
+    background-position: center;
+    overflow: auto; height: 90vh;
+    }
+    .noBgSection{
+    background-image: none !important;
+    background-color: transparent !important;
+    }
+{% endblock %}
+
+{% block menu %}
+    <div class="col d-flex">
+        <ul class="navbar-nav flex-row">
+            <li class="nav-item me-3">
+                <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">Eventi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#social">Social</a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block main %}
+    {% if event.image %}
+        <div class="containerBody">
+        <section class="section-hero text-center text-white py-5 noBgSection">
+    {% else %}
+        <section class="section-hero text-center text-white py-5">
+    {% endif %}
+<h1 class="display-4">{{ event.title }}</h1>
+</section>
+<section class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-secondary text-white mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Dettagli evento</h5>
+                    <ul class="list-unstyled">
+                        <li>
+                            {{ event.description }}
+                        </li>
+                        <li>
+                            <strong>Data:</strong>
+                            {{ event.date|date:"d/m/Y H:i" }}
+                        </li>
+                        <li>
+                            <strong>Evento di tipo:</strong>
+                            {{ event.get_event_type_display }}
+                        </li>
+                        <li>
+                            <strong>Luogo di ritrovo:</strong>
+                            {{ event.location }}
+                        </li>
+                        {% if event.maps_link %}
+                            <li>
+                                <strong>Mappa del percorso:</strong>
+                                {{ event.maps_link }}
+                            </li>
+                        {% else %}
+                            <li>
+                                <strong>Raduno Statico</strong>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col text-start">
+                    <a href="{% url 'index' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Torna agli eventi
+                    </a>
+                </div>
+                <div class="col text-end">
+                    <a href="#" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Partecipa all'evento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% if event.image %}
+    </div>
+{% endif %}
+{% endblock %}

@@ -21,28 +21,47 @@
         </p>
     </section>
     <section id="eventi" class="py-5 bg-dark text-white">
-            <div class=" container">
-                <h2 class="text-center">Eventi in arrivo</h2>
-                <div class="row">
-                    {# Itera su tutti gli eventi futuri, non solo i primi 3 #}
-                    {% for event in events %}
-                        <a class="col-md-4 mb-4 text-decoration-none" href="{{event.url}}">
-                            <div class="card bg-secondary text-white h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ event.title }}</h5>
-                                    <p class="card-text">{{ event.description }}</p>
-                                    <p class="card-text">
-                                        <small>Data: {{ event.date|date:"d/m/Y H:i" }}</small>
-                                    </p>
+        <div class=" container">
+            <h2 class="text-center">Eventi in arrivo</h2>
+            <div class="row g-4">
+                {# Itera su tutti gli eventi futuri, non solo i primi 3 #}
+                {% for event in events %}
+                    <a class="col-12 col-lg-4 mb-4 text-decoration-none" href="{% url 'detail' event.id %}">
+                        <div class="card bg-secondary text-white h-100">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-4">
+                                        {% if event.image %}
+                                            <img src="{{ event.image.url }}" class="img-fluid rounded"
+                                                 alt="{{ event.title }}">
+                                        {% else %}
+                                            {% if event.image %}
+                                                <img src="{{ event.image.url }}"
+                                                     class="img-fluid rounded" alt="Immagine evento">
+                                            {% else %}
+                                                <img src="../../static/images/DefaultImageEvent.jpg"
+                                                     class="img-fluid rounded" alt="Immagine evento">
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-8">
+                                        <h5 class="card-title">{{ event.title }}</h5>
+                                        <p class="card-text mb-0">
+                                            <small>Data: {{ event.date|date:"d/m/Y H:i" }}</small>
+                                        </p>
+                                        <p class="card-text mb-0">{{ event.get_event_type_display }}</p>
+                                        <p class="card-text mb-0">Punto di ritrovo: {{ event.location }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </a>
-                    {% empty %}
-                        <div class="col-12">
-                            <p class="text-center">Nessun evento futuro disponibile.</p>
                         </div>
-                    {% endfor %}
-                </div>
+                    </a>
+                {% empty %}
+                    <div class="col-12">
+                        <p class="text-center">Nessun evento futuro disponibile.</p>
+                    </div>
+                {% endfor %}
             </div>
+        </div>
     </section>
 {% endblock %}

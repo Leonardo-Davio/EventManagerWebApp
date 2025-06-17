@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.utils import timezone
 from .models import Event
@@ -9,7 +9,9 @@ from .models import Event
 
 def index(response):
     today = timezone.now()
-    print(today)
     events = Event.objects.filter(date__gte=today)
-    print(events)
     return render(response, "main/homepage.html", {"events": events})
+
+def detail(request, id):
+    event = get_object_or_404(Event, id=id)
+    return render(request, "main/event.html", {"event": event})
