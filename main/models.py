@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.conf import settings
 
 
 # Create your models here.
@@ -27,3 +29,11 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+class Participation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    inscription_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'event')

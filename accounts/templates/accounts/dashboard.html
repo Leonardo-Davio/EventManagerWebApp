@@ -1,0 +1,117 @@
+{% extends "main/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block menu %}
+    <div class="col d-flex">
+        <ul class="navbar-nav flex-row">
+            <li class="nav-item me-3">
+                <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">Eventi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#social">Social</a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <div class="container flex-grow-1 d-flex flex-column" style="padding-top: 4rem;">
+        <!-- Sezione Utente -->
+        <div class="d-flex align-items-center mb-4 w-100">
+            <h2 class="me-2">Benvenuto, <span id="username">{{ user.username }}</span></h2>
+        </div>
+
+        <!-- Sezione Eventi -->
+        <div id="events-section" class="flex-grow-1 d-flex flex-column">
+            {% if events %}
+                <div class="row" id="events-cards">
+                    {% for event in events %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                {% if event.image %}
+                                    <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+                                {% else %}
+                                    <img src="../../static/images/DefaultImageEvent.jpg" class="card-img-top"
+                                         alt="{{ event.title }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <p class="card-text">Data: {{ event.date|date:"d/m/Y H:i" }}</p>
+                                    <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
+                                    <a href="{% url 'detail' event.id %}"
+                                       class="btn btn-primary btn-sm me-2">Dettagli</a>
+                                    <form method="post" action="{% url 'cancel_participation' event.id %}"
+                                          style="display:inline;" class="cancel-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="from_dashboard" value="1" />
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="openCancelModal(this)">
+                                            Cancella
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="flex-grow-1 d-flex flex-column align-items-start">
+                    <p id="no-events" class="text-white m-0">Non hai prenotato a nessun evento.</p>
+                    <a href="#" class="btn btn-outline-primary mt-3"><!--{ % url 'events_list' %} -->
+                        Vai a tutti gli eventi
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Modal di conferma cancellazione -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white">
+              <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">Conferma cancellazione</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+              </div>
+              <div class="modal-body">
+                Sei sicuro di voler cancellare la prenotazione per questo evento?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelBtn">Conferma</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+        let formToSubmit = null;
+        function openCancelModal(button) {
+            formToSubmit = button.closest('form');
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block social %}
+    <section id="social" class="py-5 bg-secondary text-white mt-auto">
+        <div class="container">
+            <h2 class="mb-4 text-accent">Seguici sui social</h2>
+            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
+            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
+            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
+        </div>
+    </section>
+{% endblock %}

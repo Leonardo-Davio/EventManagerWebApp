@@ -10,6 +10,13 @@
     background-position: center;
     overflow: auto; height: 90vh;
     }
+    .containerBodyDefault {
+    background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)),
+    url('../../static/images/DefaultImageEvent.jpg');
+    background-size: cover;
+    background-position: center;
+    overflow: auto; height: 90vh;
+    }
     .noBgSection{
     background-image: none !important;
     background-color: transparent !important;
@@ -36,11 +43,15 @@
     {% if event.image %}
         <div class="containerBody">
         <section class="section-hero text-center text-white py-5 noBgSection">
+            <h1 class="display-4">{{ event.title }}</h1>
+        </section>
     {% else %}
+        <div class="containerBodyDefault">
         <section class="section-hero text-center text-white py-5">
+            <h1 class="display-4">{{ event.title }}</h1>
+        </section>
     {% endif %}
-<h1 class="display-4">{{ event.title }}</h1>
-</section>
+
 <section class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -83,15 +94,76 @@
                     </a>
                 </div>
                 <div class="col text-end">
-                    <a href="#" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Partecipa all'evento
-                    </a>
+                    {% if user.is_authenticated %}
+                        {% if is_participating %}
+                            <form action="{% url 'cancel_participation' event.id %}" method="post"
+                                  style="display:inline;" class="cancel-form">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-danger"
+                                        onclick="openCancelModal(this)">
+                                    <i class="bi bi-x-circle"></i> Annulla partecipazione
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'participate' event.id %}" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Partecipa all'evento
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'participate' event.id %}" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Partecipa all'evento
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </section>
-{% if event.image %}
-    </div>
-{% endif %}
+</div>
 {% endblock %}
+
+{% block social %}
+    <section id="social" class="py-5 bg-secondary text-white">
+        <div class="container">
+            <h2 class="mb-4 text-accent">Seguici sui social</h2>
+            <!-- Icone social -->
+            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
+            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
+            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
+        </div>
+    </section>
+{% endblock %}
+
+<!-- Modal di conferma cancellazione -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cancelModalLabel">Conferma cancellazione</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+      </div>
+      <div class="modal-body">
+        Sei sicuro di voler cancellare la prenotazione per questo evento?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+        <button type="button" class="btn btn-danger" id="confirmCancelBtn">Conferma</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    let formToSubmit = null;
+    function openCancelModal(button) {
+        formToSubmit = button.closest('form');
+        var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        modal.show();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+    });
+</script>
