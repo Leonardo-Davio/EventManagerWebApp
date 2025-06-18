@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0003_event_maps_link_alter_event_description_and_more'),
+        ('event', '0003_event_maps_link_alter_event_description_and_more'),
     ]
 
     operations = [

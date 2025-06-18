@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %}
+{% extends 'event/base.html' %}
 
 {% block main %}
     <section class="section-hero text-center text-white py-5 mb-5">
@@ -26,7 +26,7 @@
                                                 <img src="{{ event.image.url }}"
                                                      class="img-fluid rounded" alt="Immagine evento">
                                             {% else %}
-                                                <img src="../../static/images/DefaultImageEvent.jpg"
+                                                <img src="../../event/static/images/DefaultImageEvent.jpg"
                                                      class="img-fluid rounded" alt="Immagine evento">
                                             {% endif %}
                                         {% endif %}

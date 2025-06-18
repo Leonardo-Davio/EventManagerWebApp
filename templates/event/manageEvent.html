@@ -1,0 +1,67 @@
+{% extends "event/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Modifica evento{% endblock %}
+
+{% block main %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Modifica evento</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'detail' event.id %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Annulla
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-pencil-square"></i> Salva modifiche
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function roundMinutes(value) {
+        if (!value) return value;
+        let [date, time] = value.split('T');
+        if (!time) return value;
+        let [hh, mm] = time.split(':');
+        mm = parseInt(mm, 10);
+        let rounded = 0;
+        if (mm < 8) rounded = 0;
+        else if (mm < 23) rounded = 15;
+        else if (mm < 38) rounded = 30;
+        else if (mm < 53) rounded = 45;
+        else {
+            rounded = 0;
+            hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+        }
+        return `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+    }
+
+    function enforceMinuteStep(e) {
+        const input = e.target;
+        const newValue = roundMinutes(input.value);
+        if (input.value !== newValue) {
+            input.value = newValue;
+        }
+    }
+
+    document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
+        input.addEventListener('change', enforceMinuteStep);
+        input.addEventListener('blur', enforceMinuteStep);
+    });
+});
+</script>
+{% endblock %}

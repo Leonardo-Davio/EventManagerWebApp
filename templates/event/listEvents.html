@@ -1,9 +1,7 @@
-{% extends "main/base.html" %}
-
+{% extends "event/base.html" %}
 {% load static %}
-
+{% load dict_extras %}
 {% block title %}Calendario Eventi{% endblock %}
-
 {% block CustomStyle %}
     #pastEventsTitle{
     width: fit-content;
@@ -11,7 +9,6 @@
     #pastEventsTitle:hover{
     font-weight: bold;
     }
-    /* nessun altro CSS necessario, usiamo le utility Bootstrap */
 {% endblock %}
 
 {% block main %}
@@ -30,9 +27,9 @@
                     <i class="bi bi-funnel"></i> Filtra
                 </button>
                 <div class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="filterDropdown"
-                     style="min-width: 400px;">
+                     style="min-width: 600px;">
                     <div class="row">
-                        <div class="col-12 col-md-6 border-end mb-2 mb-md-0">
+                        <div class="col-12 col-md-4 border-end mb-2 mb-md-0">
                             <div class="fw-bold mb-2">Categorie</div>
                             <form id="categoryCheckboxes">
                                 {% for key, label in events.0.EVENT_TYPE_CHOICES %}
@@ -46,7 +43,40 @@
                                 {% endfor %}
                             </form>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4 border-end mb-2 mb-md-0">
+                            <div class="fw-bold mb-2">Status</div>
+                            <form id="statusCheckboxes">
+                                <div class="form-check">
+                                    <input class="form-check-input status-checkbox" type="checkbox"
+                                           value="annullato" id="status-annullato" checked>
+                                    <label class="form-check-label" for="status-annullato">
+                                        Annullato
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input status-checkbox" type="checkbox"
+                                           value="iscrizioni_non_aperte" id="status-nonaperte" checked>
+                                    <label class="form-check-label" for="status-nonaperte">
+                                        Iscrizioni non aperte
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input status-checkbox" type="checkbox"
+                                           value="iscrizioni_aperte" id="status-aperte" checked>
+                                    <label class="form-check-label" for="status-aperte">
+                                        Iscrizioni aperte
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input status-checkbox" type="checkbox"
+                                           value="iscrizioni_chiuse" id="status-chiuse" checked>
+                                    <label class="form-check-label" for="status-chiuse">
+                                        Iscrizioni chiuse
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-12 col-md-4">
                             <div class="fw-bold mb-2">Data</div>
                             <div class="mb-2">
                                 <label for="dateFrom" class="form-label mb-1 small">Da</label>
@@ -64,11 +94,14 @@
                     </div>
                     <div class="dropdown-divider"></div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-secondary w-100 mt-2" type="button" id="resetFilters">
-                            Reset filtri
-                        </button>
                         <button class="btn btn-sm btn-secondary w-100 mt-2" type="button" id="clearCategories">
                             Nessuna categoria
+                        </button>
+                        <button class="btn btn-sm btn-secondary w-100 mt-2" type="button" id="onlyOpenRegistrations">
+                            Solo iscrizioni aperte
+                        </button>
+                        <button class="btn btn-sm btn-secondary w-100 mt-2" type="button" id="resetFilters">
+                            Reset filtri
                         </button>
                     </div>
                 </div>
@@ -77,7 +110,8 @@
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4" id="futureEvents">
             {% for event in events %}
                 <div class="col event-card" data-category="{{ event.event_type }}"
-                     data-date="{{ event.date|date:'Y-m-d' }}">
+                     data-date="{{ event.date|date:'Y-m-d' }}"
+                     data-status="{{ event.status }}">
                     <div class="card h-100 bg-dark text-white border-secondary shadow-sm">
                         <div class="ratio ratio-4x3">
                             {% if event.image %}
@@ -91,15 +125,31 @@
                             {% endif %}
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <div class="mb-2">
-                                <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+                            <div class="d-flex justify-content-between">
+                                <div class="mb-2">
+                                    <span class="badge bg-primary">{{ event.get_event_type_display }}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <p class="card-text">
+                                        <i class="bi bi-person-circle fs-5"></i> {{ event.num_participates }}
+                                    </p>
+                                </div>
                             </div>
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text mb-1">
                                 <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
                             </p>
                             <p class="card-text mb-2">
-                                <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
+                                {% if event.location_link %}
+                                    <a href="{{ event.location_link }}" target="_blank" class="text-decoration-none">
+                                        <span class="badge bg-info text-dark">
+                                            <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
+                                            <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                        </span>
+                                    </a>
+                                {% else %}
+                                    <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
+                                {% endif %}
                             </p>
                             <a href="{% url 'detail' event.id %}" class="btn btn-success mt-auto">Dettagli</a>
                         </div>
@@ -168,19 +218,23 @@
     </div>
 
     <script>
-        // Filtro eventi per categoria (checkbox multipli) e per data
+        // Filtro eventi per categoria, status e data
         document.addEventListener('DOMContentLoaded', function () {
             const checkboxes = document.querySelectorAll('.category-checkbox');
+            const statusCheckboxes = document.querySelectorAll('.status-checkbox');
             const futureEvents = document.getElementById('futureEvents');
             const resetBtn = document.getElementById('resetFilters');
             const clearBtn = document.getElementById('clearCategories');
+            const onlyOpenBtn = document.getElementById('onlyOpenRegistrations');
             const dateFrom = document.getElementById('dateFrom');
             const dateTo = document.getElementById('dateTo');
             const pastEvents = document.getElementById('pastEvents');
 
             function saveFilters() {
                 const cats = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+                const stats = Array.from(statusCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
                 localStorage.setItem('eventFilters_categories', JSON.stringify(cats));
+                localStorage.setItem('eventFilters_statuses', JSON.stringify(stats));
                 localStorage.setItem('eventFilters_dateFrom', dateFrom.value);
                 localStorage.setItem('eventFilters_dateTo', dateTo.value);
             }
@@ -188,21 +242,27 @@
             function loadFilters() {
                 const cats = JSON.parse(localStorage.getItem('eventFilters_categories') || 'null');
                 if (cats) checkboxes.forEach(cb => cb.checked = cats.includes(cb.value));
+                const stats = JSON.parse(localStorage.getItem('eventFilters_statuses') || 'null');
+                if (stats) statusCheckboxes.forEach(cb => cb.checked = stats.includes(cb.value));
                 const from = localStorage.getItem('eventFilters_dateFrom');
                 const to = localStorage.getItem('eventFilters_dateTo');
                 if (from) dateFrom.value = from;
                 if (to) dateTo.value = to;
             }
 
-            function filterCards(containerSelector, cardSelector) {
+            // Modifica: status viene usato solo per eventi futuri
+            function filterCards(containerSelector, cardSelector, useStatus) {
                 const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+                const selectedStatus = Array.from(statusCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
                 const from = dateFrom.value ? new Date(dateFrom.value) : null;
                 const to = dateTo.value ? new Date(dateTo.value) : null;
                 let count = 0;
                 document.querySelectorAll(containerSelector + ' ' + cardSelector).forEach(card => {
                     const cat = card.dataset.category;
                     const d = card.dataset.date ? new Date(card.dataset.date) : null;
+                    const status = card.dataset.status;
                     let show = selected.includes(cat);
+                    if (show && useStatus) show = selectedStatus.includes(status);
                     if (show && from && d) show = d >= from;
                     if (show && to && d) show = d <= to;
                     card.style.display = show ? '' : 'none';
@@ -212,26 +272,34 @@
             }
 
             function applyAndSave() {
-                const futureCount = filterCards('#futureEvents', '.event-card');
+                const futureCount = filterCards('#futureEvents', '.event-card', true);
                 const emptyCard = document.querySelector('#futureEvents .event-card-empty');
                 if (emptyCard) emptyCard.classList.toggle('d-none', futureCount !== 0);
 
-                filterCards('#pastEvents', '.event-card-past');
+                filterCards('#pastEvents', '.event-card-past', false);
                 saveFilters();
             }
 
             checkboxes.forEach(cb => cb.addEventListener('change', applyAndSave));
+            statusCheckboxes.forEach(cb => cb.addEventListener('change', applyAndSave));
             dateFrom.addEventListener('change', applyAndSave);
             dateTo.addEventListener('change', applyAndSave);
 
             resetBtn.addEventListener('click', () => {
                 checkboxes.forEach(cb => cb.checked = true);
+                statusCheckboxes.forEach(cb => cb.checked = true);
                 dateFrom.value = '';
                 dateTo.value = '';
                 applyAndSave();
             });
             clearBtn.addEventListener('click', () => {
                 checkboxes.forEach(cb => cb.checked = false);
+                applyAndSave();
+            });
+            onlyOpenBtn.addEventListener('click', () => {
+                statusCheckboxes.forEach(cb => {
+                    cb.checked = (cb.value === 'iscrizioni_aperte');
+                });
                 applyAndSave();
             });
 

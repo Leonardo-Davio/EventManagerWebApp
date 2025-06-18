@@ -1,6 +1,7 @@
-{% extends "main/base.html" %}
+{% extends "event/base.html" %}
 
 {% block title %}Dashboard{% endblock %}
+{% load static %}
 
 {% block main %}
     <div class="container flex-grow-1 d-flex flex-column" style="padding-top: 4rem;">
@@ -8,18 +9,56 @@
         <div class="d-flex align-items-center mb-4 w-100">
             <h2 class="me-2">Benvenuto, <span id="username">{{ user.username }}</span></h2>
         </div>
+        {% if is_organizer %}
+        <!-- Sezione Eventi Organizzati -->
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">I tuoi eventi organizzati</h4>
+                <a href="{% url 'new_event' %}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Nuovo evento
+                </a>
+            </div>
+            {% if organized_events %}
+                <div class="row">
+                    {% for event in organized_events %}
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                {% if event.image %}
+                                    <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+                                {% else %}
+                                    <img src="{% static 'images/DefaultImageEvent.jpg' %}" class="card-img-top"
+                                         alt="{{ event.title }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <p class="card-text">Data: {{ event.date|date:"d/m/Y H:i" }}</p>
+                                    <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
+                                    <a href="{% url 'detail' event.id %}" class="btn btn-primary btn-sm me-2">Dettagli</a>
+                                    <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm">Gestisci</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">
+                    Non hai ancora organizzato nessun evento.
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Sezione Eventi -->
         <div id="events-section" class="flex-grow-1 d-flex flex-column">
             {% if events %}
                 <div class="row" id="events-cards">
                     {% for event in events %}
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <div class="card h-100">
                                 {% if event.image %}
                                     <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
                                 {% else %}
-                                    <img src="../../static/images/DefaultImageEvent.jpg" class="card-img-top"
+                                    <img src="{% static 'images/DefaultImageEvent.jpg' %}" class="card-img-top"
                                          alt="{{ event.title }}">
                                 {% endif %}
                                 <div class="card-body">
@@ -45,7 +84,7 @@
             {% else %}
                 <div class="flex-grow-1 d-flex flex-column align-items-start">
                     <p id="no-events" class="text-white m-0">Non hai prenotato a nessun evento.</p>
-                    <a href="#" class="btn btn-outline-primary mt-3"><!--{ % url 'events_list' %} -->
+                    <a href="{% url 'events' %}" class="btn btn-outline-primary mt-3">
                         Vai a tutti gli eventi
                     </a>
                 </div>
@@ -88,4 +127,3 @@
         });
     </script>
 {% endblock %}
-

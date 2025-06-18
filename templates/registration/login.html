@@ -1,9 +1,8 @@
-{% extends "main/base.html" %}
-{% load crispy_forms_filters %}
+{% extends "event/base.html" %}
+
+{% block title %}Log in{% endblock %}
+
 {% load crispy_forms_tags %}
-
-{% block title %}Create an Account{% endblock %}
-
 {% block menu %}
     <div class="col d-flex">
         <ul class="navbar-nav flex-row">
@@ -18,17 +17,16 @@
 {% endblock %}
 
 {% block main %}
-    <div class="position-fixed top-50 start-50 translate-middle w-100 ">
-        <div class="mx-auto bg-secondary text-black p-4 rounded-5" style="max-width: 700px;">
-            <form method="POST" class="form-group">
+    <div class="position-fixed top-50 start-50 translate-middle w-100">
+        <div class="mx-auto" style="max-width: 400px;">
+            <form method="post" class="form-group">
                 {% csrf_token %}
                 {{ form|crispy }}
-                <button type="submit" class="btn btn-success">
-                    Registrati
-                </button>
+                <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+                <button class="btn btn-success w-100" type="submit">Log in</button>
+                <p class="mt-3 text-center">Non hai un account? Creane uno <a href="/register">qua</a></p>
             </form>
         </div>
     </div>
 {% endblock %}
 
-{% block social %}{% endblock %}

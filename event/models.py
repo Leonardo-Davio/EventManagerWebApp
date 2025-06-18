@@ -1,8 +1,6 @@
-import requests
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-import re
 
 
 class Event(models.Model):
@@ -34,7 +32,12 @@ class Event(models.Model):
 
     # Campo che verrà popolato automaticamente via reverse-geocoding
     location = models.CharField(max_length=200, verbose_name='Città/Paese di ritrovo')
-    location_link = models.CharField(max_length=500, blank=True, help_text='Link del ritrovo')
+    location_link = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text='Link del ritrovo'
+    )
 
     # Link al percorso su Maps (opzionale)
     maps_link = models.URLField(
@@ -71,7 +74,7 @@ class Event(models.Model):
     )
 
     def __str__(self):
-        return self.title
+        return f"{self.title} (ID: {self.id})"
 
     @property
     def status(self):

@@ -22,7 +22,7 @@ from accounts import views as v
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("main.urls")),
+    path('', include("event.urls")),
     path('account/', include('accounts.urls')),
     path('', include("django.contrib.auth.urls")),
     path('register/', v.register, name='register'),
