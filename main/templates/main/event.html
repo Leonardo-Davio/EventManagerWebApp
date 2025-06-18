@@ -5,17 +5,15 @@
 
 {% block CustomStyle %}
     .containerBody{
-    background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{{ event.image.url }}');
+    {% if event.image and event.image.url %}
+        background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{{ event.image.url }}');
+    {% else %}
+        background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{% static "images/DefaultImageEvent.jpg" %}');
+    {% endif %}
     background-size: cover;
     background-position: center;
-    overflow: auto; height: 90vh;
-    }
-    .containerBodyDefault {
-    background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)),
-    url('../../static/images/DefaultImageEvent.jpg');
-    background-size: cover;
-    background-position: center;
-    overflow: auto; height: 90vh;
+    overflow: auto;
+    height:100%;
     }
     .noBgSection{
     background-image: none !important;
@@ -23,147 +21,114 @@
     }
 {% endblock %}
 
-{% block menu %}
-    <div class="col d-flex">
-        <ul class="navbar-nav flex-row">
-            <li class="nav-item me-3">
-                <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Eventi</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#social">Social</a>
-            </li>
-        </ul>
-    </div>
-{% endblock %}
-
 {% block main %}
-    {% if event.image %}
-        <div class="containerBody">
-        <section class="section-hero text-center text-white py-5 noBgSection">
+    <div class="containerBody">
+        <section class="text-center text-white py-5 noBgSection">
             <h1 class="display-4">{{ event.title }}</h1>
         </section>
-    {% else %}
-        <div class="containerBodyDefault">
-        <section class="section-hero text-center text-white py-5">
-            <h1 class="display-4">{{ event.title }}</h1>
-        </section>
-    {% endif %}
-
-<section class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card bg-secondary text-white mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Dettagli evento</h5>
-                    <ul class="list-unstyled">
-                        <li>
-                            {{ event.description }}
-                        </li>
-                        <li>
-                            <strong>Data:</strong>
-                            {{ event.date|date:"d/m/Y H:i" }}
-                        </li>
-                        <li>
-                            <strong>Evento di tipo:</strong>
-                            {{ event.get_event_type_display }}
-                        </li>
-                        <li>
-                            <strong>Luogo di ritrovo:</strong>
-                            {{ event.location }}
-                        </li>
-                        {% if event.maps_link %}
-                            <li>
-                                <strong>Mappa del percorso:</strong>
-                                {{ event.maps_link }}
-                            </li>
-                        {% else %}
-                            <li>
-                                <strong>Raduno Statico</strong>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col text-start">
-                    <a href="{% url 'index' %}" class="btn btn-primary">
-                        <i class="bi bi-arrow-left"></i> Torna agli eventi
-                    </a>
-                </div>
-                <div class="col text-end">
-                    {% if user.is_authenticated %}
-                        {% if is_participating %}
-                            <form action="{% url 'cancel_participation' event.id %}" method="post"
-                                  style="display:inline;" class="cancel-form">
-                                {% csrf_token %}
-                                <button type="button" class="btn btn-danger"
-                                        onclick="openCancelModal(this)">
-                                    <i class="bi bi-x-circle"></i> Annulla partecipazione
-                                </button>
-                            </form>
-                        {% else %}
-                            <a href="{% url 'participate' event.id %}" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Partecipa all'evento
+        <section class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card bg-secondary text-white mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Dettagli evento</h5>
+                            <ul class="list-unstyled">
+                                <li>
+                                    {{ event.description }}
+                                </li>
+                                <li>
+                                    <strong>Data:</strong>
+                                    {{ event.date|date:"d/m/Y H:i" }}
+                                </li>
+                                <li>
+                                    <strong>Evento di tipo:</strong>
+                                    {{ event.get_event_type_display }}
+                                </li>
+                                <li>
+                                    <strong>Luogo di ritrovo:</strong>
+                                    {{ event.location }}
+                                </li>
+                                {% if event.maps_link %}
+                                    <li>
+                                        <strong>Mappa del percorso:</strong>
+                                        {{ event.maps_link }}
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <strong>Raduno Statico</strong>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col text-start">
+                            <a href="{% url 'index' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-left"></i> Torna agli eventi
                             </a>
-                        {% endif %}
-                    {% else %}
-                        <a href="{% url 'login' %}?next={% url 'participate' event.id %}" class="btn btn-success">
-                            <i class="bi bi-check-circle"></i> Partecipa all'evento
-                        </a>
-                    {% endif %}
+                        </div>
+                        <div class="col text-end">
+                            {% if user.is_authenticated %}
+                                {% if is_participating %}
+                                    <form action="{% url 'cancel_participation' event.id %}" method="post" style="display:inline;" class="cancel-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="from_event" value="1" />
+                                        <button type="button" class="btn btn-danger" onclick="openCancelModal(this)">
+                                            <i class="bi bi-x-circle"></i> Annulla partecipazione
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'participate' event.id %}" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Partecipa all'evento
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'participate' event.id %}" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Partecipa all'evento
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Modal di conferma cancellazione -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelModalLabel">Conferma cancellazione</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body">
+                        Sei sicuro di voler cancellare la prenotazione per questo evento?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="button" class="btn btn-danger" id="confirmCancelBtn">Conferma</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-</div>
-{% endblock %}
-
-{% block social %}
-    <section id="social" class="py-5 bg-secondary text-white">
-        <div class="container">
-            <h2 class="mb-4 text-accent">Seguici sui social</h2>
-            <!-- Icone social -->
-            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
-            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
-            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
-        </div>
-    </section>
-{% endblock %}
-
-<!-- Modal di conferma cancellazione -->
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content bg-dark text-white">
-      <div class="modal-header">
-        <h5 class="modal-title" id="cancelModalLabel">Conferma cancellazione</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-      </div>
-      <div class="modal-body">
-        Sei sicuro di voler cancellare la prenotazione per questo evento?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-        <button type="button" class="btn btn-danger" id="confirmCancelBtn">Conferma</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-    let formToSubmit = null;
-    function openCancelModal(button) {
-        formToSubmit = button.closest('form');
-        var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
-        modal.show();
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('confirmCancelBtn').addEventListener('click', function() {
-            if (formToSubmit) {
-                formToSubmit.submit();
+        <script>
+            let formToSubmit = null;
+            function openCancelModal(button) {
+                formToSubmit = button.closest('form');
+                var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+                modal.show();
             }
-        });
-    });
-</script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    }
+                });
+            });
+        </script>
+    </div>
+{% endblock %}
+
+
+<!-- Assicurati che Bootstrap JS sia incluso nel template base, ad esempio: -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->

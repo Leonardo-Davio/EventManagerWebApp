@@ -1,18 +1,5 @@
 {% extends 'main/base.html' %}
 
-{% block menu %}
-    <div class="col d-flex">
-        <ul class="navbar-nav flex-row">
-            <li class="nav-item me-3">
-                <a class="nav-link text-white" href="#eventi">Eventi</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#social">Social</a>
-            </li>
-        </ul>
-    </div>
-{% endblock %}
-
 {% block main %}
     <section class="section-hero text-center text-white py-5 mb-5">
         <h1 class="display-4"> Benvenuto a Zero Gravity Events</h1>
@@ -62,18 +49,14 @@
                     </div>
                 {% endfor %}
             </div>
-        </div>
-    </section>
-{% endblock %}
-
-{% block social %}
-    <section id="social" class="py-5 bg-secondary text-white">
-        <div class="container">
-            <h2 class="mb-4 text-accent">Seguici sui social</h2>
-            <!-- Icone social -->
-            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
-            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
-            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
+            <!-- Pulsante per vedere tutti gli eventi -->
+            <div class="row mt-4">
+                <div class="col text-center">
+                    <a href="{% url 'events' %}" class="btn btn-primary btn-lg">
+                        Vedi tutti gli eventi
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 {% endblock %}

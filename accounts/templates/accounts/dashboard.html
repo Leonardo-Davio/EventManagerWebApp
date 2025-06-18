@@ -2,22 +2,6 @@
 
 {% block title %}Dashboard{% endblock %}
 
-{% block menu %}
-    <div class="col d-flex">
-        <ul class="navbar-nav flex-row">
-            <li class="nav-item me-3">
-                <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Eventi</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#social">Social</a>
-            </li>
-        </ul>
-    </div>
-{% endblock %}
-
 {% block main %}
     <div class="container flex-grow-1 d-flex flex-column" style="padding-top: 4rem;">
         <!-- Sezione Utente -->
@@ -105,13 +89,3 @@
     </script>
 {% endblock %}
 
-{% block social %}
-    <section id="social" class="py-5 bg-secondary text-white mt-auto">
-        <div class="container">
-            <h2 class="mb-4 text-accent">Seguici sui social</h2>
-            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
-            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
-            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
-        </div>
-    </section>
-{% endblock %}

@@ -55,8 +55,10 @@
         }
 
         /* ==== Button & link accents ==== */
+        /* RIMOSSO: .btn-primary personalizzato per usare il default Bootstrap */
+        /*
         .btn-primary {
-            background-color: #E53935; /* Racing Red */
+            background-color: #E53935;
             border-color: #E53935;
         }
 
@@ -64,6 +66,7 @@
             background-color: #D32F2F;
             border-color: #D32F2F;
         }
+        */
 
         .text-accent {
             color: #00BCD4 !important; /* Electric Cyan */
@@ -82,16 +85,20 @@
         html, body {
             height: 100%;
         }
+
         body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
+
         main.flex-grow-1 {
             flex: 1 0 auto;
             display: flex;
             flex-direction: column;
         }
+
+        {% block CustomStyle %}{% endblock %}
     </style>
 </head>
 <body class="pt-5">
@@ -102,7 +109,19 @@
         <div class="row w-100 align-items-center">
             <!-- Menu -->
             {% block menu %}
-                <p>Error: Not Load</p>
+                <div class="col d-flex">
+                    <ul class="navbar-nav flex-row">
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'events' %}">Eventi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#social">Social</a>
+                        </li>
+                    </ul>
+                </div>
             {% endblock %}
             <!-- Logo -->
             <div class="col d-flex justify-content-center">
@@ -121,6 +140,7 @@
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                         >
+                            <span class="visually-hidden">Menu utente</span>
                             <i class="bi bi-person-circle fs-5"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenuButton">
@@ -157,7 +177,8 @@
                         </ul>
                     </div>
                 {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm me-2">
+                    <a href="{% url 'login' %}{% if event %}?next={% url 'participate' event.id %}{% endif %}"
+                       class="btn btn-primary btn-sm me-2">
                         Login
                     </a>
                 {% endif %}
@@ -172,7 +193,17 @@
     {% block main %}{% endblock %}
 </main>
 
-{% block social %}{% endblock %}
+{% block social %}
+    <section id="social" class="py-3 bg-secondary text-white">
+        <div class="container d-flex align-items-center">
+            <h2 class="text-dark me-5">Seguici sui social</h2>
+            <!-- Icone social -->
+            <a href="#" class="me-3 text-white"><i class="bi bi-facebook fs-3"></i></a>
+            <a href="#" class="me-3 text-white"><i class="bi bi-instagram fs-3"></i></a>
+            <a href="#" class="text-white"><i class="bi bi-twitter fs-3"></i></a>
+        </div>
+    </section>
+{% endblock %}
 
 
 <!-- Bootstrap JS -->
