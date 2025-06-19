@@ -1,36 +1,34 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.generic.edit import CreateView
+from django.views.generic import TemplateView
+from django.urls import reverse_lazy
 
 from event.models import Participation, Event
 from .forms import RegistrationForm
 
 # Create your views here.
 
-def register(response):
-    if response.method == "POST":
-        form = RegistrationForm(response.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("/")
-    else:
-        form = RegistrationForm()
+class RegisterView(CreateView):
+    form_class = RegistrationForm
+    template_name = 'accounts/register.html'
+    success_url = '/'  # Corretto: reindirizza alla home
 
-    return render(response, 'accounts/register.html', {"form": form})
+class DashboardView(TemplateView):
+    template_name = "accounts/dashboard.html"
 
-@login_required
-def dashboard(request):
-    participates = Participation.objects.filter(user=request.user).select_related("event")
-    events = [p.event for p in participates]
-    is_organizer = request.user.groups.filter(id=2).exists()
-    organized_events = []
-    if is_organizer:
-        organized_events = Event.objects.filter(organizer=request.user)
-    return render(
-        request,
-        "accounts/dashboard.html",
-        {
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        participates = Participation.objects.filter(user=user).select_related("event")
+        events = [p.event for p in participates]
+        is_organizer = user.groups.filter(id=2).exists()
+        organized_events = []
+        if is_organizer:
+            organized_events = Event.objects.filter(organizer=user)
+        context.update({
             "events": events,
             "is_organizer": is_organizer,
             "organized_events": organized_events,
-        }
-    )
+        })
+        return context

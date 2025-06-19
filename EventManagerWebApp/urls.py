@@ -25,8 +25,8 @@ urlpatterns = [
     path('', include("event.urls")),
     path('account/', include('accounts.urls')),
     path('', include("django.contrib.auth.urls")),
-    path('register/', v.register, name='register'),
-    path('', include('accounts.urls')),
+    path('register/', v.RegisterView.as_view(), name='register'),
+    path('dashboard/', v.DashboardView.as_view(), name='dashboard'),  # aggiunto qui
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
