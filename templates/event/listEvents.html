@@ -27,12 +27,27 @@
                     <i class="bi bi-funnel"></i> Filtra
                 </button>
                 <div class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="filterDropdown"
-                     style="min-width: 600px;">
+                     style="min-width: 800px;">
                     <div class="row">
-                        <div class="col-12 col-md-4 border-end mb-2 mb-md-0">
+                        <div class="col-12 col-md-3 border-end">
+                            <div class="fw-bold mb-2">Ordina per</div>
+                            <select id="sortSelect"
+                                    class="form-select form-select-sm mb-2 bg-dark text-white border-secondary">
+                                <option value="date_asc">Data evento (crescente)</option>
+                                <option value="date_desc">Data evento (decrescente)</option>
+                                <option value="partecipanti_desc">Numero partecipanti (decrescente)</option>
+                                <option value="partecipanti_asc">Numero partecipanti (crescente)</option>
+                            </select>
+                            <div class="fw-bold mb-2 mt-3">Ricerca</div>
+                            <input type="text" id="searchInput"
+                                   class="form-control form-control-sm bg-dark text-white border-secondary"
+                                   placeholder="Titolo o luogo...">
+                        </div>
+
+                        <div class="col-12 col-md-3 border-end mb-2 mb-md-0">
                             <div class="fw-bold mb-2">Categorie</div>
                             <form id="categoryCheckboxes">
-                                {% for key, label in events.0.EVENT_TYPE_CHOICES %}
+                                {% for key, label in EVENT_TYPE_CHOICES %}
                                     <div class="form-check">
                                         <input class="form-check-input category-checkbox" type="checkbox"
                                                value="{{ key }}" id="cat-{{ key }}" checked>
@@ -43,7 +58,7 @@
                                 {% endfor %}
                             </form>
                         </div>
-                        <div class="col-12 col-md-4 border-end mb-2 mb-md-0">
+                        <div class="col-12 col-md-3 border-end mb-2 mb-md-0">
                             <div class="fw-bold mb-2">Status</div>
                             <form id="statusCheckboxes">
                                 <div class="form-check">
@@ -76,7 +91,7 @@
                                 </div>
                             </form>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3 mb-2 mb-md-0">
                             <div class="fw-bold mb-2">Data</div>
                             <div class="mb-2">
                                 <label for="dateFrom" class="form-label mb-1 small">Da</label>
@@ -92,7 +107,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dropdown-divider"></div>
+
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-secondary w-100 mt-2" type="button" id="clearCategories">
                             Nessuna categoria
@@ -111,7 +126,10 @@
             {% for event in events %}
                 <div class="col event-card" data-category="{{ event.event_type }}"
                      data-date="{{ event.date|date:'Y-m-d' }}"
-                     data-status="{{ event.status }}">
+                     data-status="{{ event.status }}"
+                     data-title="{{ event.title|lower }}"
+                     data-location="{{ event.location|lower }}"
+                     data-partecipanti="{{ event.num_participates }}">
                     <div class="card h-100 bg-dark text-white border-secondary shadow-sm">
                         <div class="ratio ratio-4x3">
                             {% if event.image %}
@@ -218,7 +236,7 @@
     </div>
 
     <script>
-        // Filtro eventi per categoria, status e data
+        // Filtro eventi per categoria, status, data, ricerca e ordinamento
         document.addEventListener('DOMContentLoaded', function () {
             const checkboxes = document.querySelectorAll('.category-checkbox');
             const statusCheckboxes = document.querySelectorAll('.status-checkbox');
@@ -228,6 +246,8 @@
             const onlyOpenBtn = document.getElementById('onlyOpenRegistrations');
             const dateFrom = document.getElementById('dateFrom');
             const dateTo = document.getElementById('dateTo');
+            const sortSelect = document.getElementById('sortSelect');
+            const searchInput = document.getElementById('searchInput');
             const pastEvents = document.getElementById('pastEvents');
 
             function saveFilters() {
@@ -237,6 +257,8 @@
                 localStorage.setItem('eventFilters_statuses', JSON.stringify(stats));
                 localStorage.setItem('eventFilters_dateFrom', dateFrom.value);
                 localStorage.setItem('eventFilters_dateTo', dateTo.value);
+                localStorage.setItem('eventFilters_sort', sortSelect.value);
+                localStorage.setItem('eventFilters_search', searchInput.value);
             }
 
             function loadFilters() {
@@ -248,64 +270,114 @@
                 const to = localStorage.getItem('eventFilters_dateTo');
                 if (from) dateFrom.value = from;
                 if (to) dateTo.value = to;
+                const sort = localStorage.getItem('eventFilters_sort');
+                if (sort) sortSelect.value = sort;
+                const search = localStorage.getItem('eventFilters_search');
+                if (search) searchInput.value = search;
             }
 
-            // Modifica: status viene usato solo per eventi futuri
-            function filterCards(containerSelector, cardSelector, useStatus) {
+            function filterAndSortCards() {
                 const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
                 const selectedStatus = Array.from(statusCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
                 const from = dateFrom.value ? new Date(dateFrom.value) : null;
                 const to = dateTo.value ? new Date(dateTo.value) : null;
+                const search = searchInput.value.trim().toLowerCase();
+                let cards = Array.from(document.querySelectorAll('#futureEvents .event-card'));
+                // Filtro
                 let count = 0;
-                document.querySelectorAll(containerSelector + ' ' + cardSelector).forEach(card => {
+                cards.forEach(card => {
                     const cat = card.dataset.category;
                     const d = card.dataset.date ? new Date(card.dataset.date) : null;
                     const status = card.dataset.status;
+                    const title = card.dataset.title || '';
+                    const location = card.dataset.location || '';
                     let show = selected.includes(cat);
-                    if (show && useStatus) show = selectedStatus.includes(status);
+                    if (show) show = selectedStatus.includes(status);
                     if (show && from && d) show = d >= from;
                     if (show && to && d) show = d <= to;
+                    if (show && search) {
+                        show = title.includes(search) || location.includes(search);
+                    }
                     card.style.display = show ? '' : 'none';
                     if (show) count++;
                 });
-                return count;
-            }
-
-            function applyAndSave() {
-                const futureCount = filterCards('#futureEvents', '.event-card', true);
+                // Ordinamento
+                const sortVal = sortSelect.value;
+                cards = cards.filter(card => card.style.display !== 'none');
+                cards.sort((a, b) => {
+                    if (sortVal === 'date_asc') {
+                        return new Date(a.dataset.date) - new Date(b.dataset.date);
+                    }
+                    if (sortVal === 'date_desc') {
+                        return new Date(b.dataset.date) - new Date(a.dataset.date);
+                    }
+                    if (sortVal === 'partecipanti_desc') {
+                        return (parseInt(b.dataset.partecipanti) || 0) - (parseInt(a.dataset.partecipanti) || 0);
+                    }
+                    if (sortVal === 'partecipanti_asc') {
+                        return (parseInt(a.dataset.partecipanti) || 0) - (parseInt(b.dataset.partecipanti) || 0);
+                    }
+                    return 0;
+                });
+                // Riordina nel DOM
+                const parent = document.getElementById('futureEvents');
+                cards.forEach(card => parent.appendChild(card));
+                // Card vuota se nessun evento
                 const emptyCard = document.querySelector('#futureEvents .event-card-empty');
-                if (emptyCard) emptyCard.classList.toggle('d-none', futureCount !== 0);
-
-                filterCards('#pastEvents', '.event-card-past', false);
+                if (emptyCard) emptyCard.classList.toggle('d-none', count !== 0);
                 saveFilters();
             }
 
-            checkboxes.forEach(cb => cb.addEventListener('change', applyAndSave));
-            statusCheckboxes.forEach(cb => cb.addEventListener('change', applyAndSave));
-            dateFrom.addEventListener('change', applyAndSave);
-            dateTo.addEventListener('change', applyAndSave);
+            checkboxes.forEach(cb => cb.addEventListener('change', filterAndSortCards));
+            statusCheckboxes.forEach(cb => cb.addEventListener('change', filterAndSortCards));
+            dateFrom.addEventListener('change', filterAndSortCards);
+            dateTo.addEventListener('change', filterAndSortCards);
+            sortSelect.addEventListener('change', filterAndSortCards);
+            searchInput.addEventListener('input', filterAndSortCards);
 
             resetBtn.addEventListener('click', () => {
                 checkboxes.forEach(cb => cb.checked = true);
                 statusCheckboxes.forEach(cb => cb.checked = true);
                 dateFrom.value = '';
                 dateTo.value = '';
-                applyAndSave();
+                sortSelect.value = 'date_asc';
+                searchInput.value = '';
+                filterAndSortCards();
             });
             clearBtn.addEventListener('click', () => {
                 checkboxes.forEach(cb => cb.checked = false);
-                applyAndSave();
+                filterAndSortCards();
             });
             onlyOpenBtn.addEventListener('click', () => {
                 statusCheckboxes.forEach(cb => {
                     cb.checked = (cb.value === 'iscrizioni_aperte');
                 });
-                applyAndSave();
+                filterAndSortCards();
             });
+
+            // --- INIZIO: Lettura parametri GET per filtro automatico ---
+            function getUrlParam(name) {
+                const url = new URL(window.location.href);
+                return url.searchParams.get(name);
+            }
+            // Applica filtro se arrivo dalla home "popolari"
+            const urlSort = getUrlParam('sort');
+            const urlStatus = getUrlParam('status');
+            if (urlSort) {
+                sortSelect.value = urlSort;
+            }
+            if (urlStatus) {
+                // Deseleziona tutti e seleziona solo quello richiesto
+                statusCheckboxes.forEach(cb => cb.checked = false);
+                statusCheckboxes.forEach(cb => {
+                    if (cb.value === urlStatus) cb.checked = true;
+                });
+            }
+            // --- FINE: Lettura parametri GET ---
 
             // Avvio
             loadFilters();
-            applyAndSave();
+            filterAndSortCards();
         });
     </script>
 {% endblock %}

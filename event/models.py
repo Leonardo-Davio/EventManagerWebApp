@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import JSONField
 
 
 class Event(models.Model):
@@ -30,7 +31,6 @@ class Event(models.Model):
     description = models.TextField(max_length=1000)
     date = models.DateTimeField()
 
-    # Campo che verrà popolato automaticamente via reverse-geocoding
     location = models.CharField(max_length=200, verbose_name='Città/Paese di ritrovo')
     location_link = models.CharField(
         max_length=500,
@@ -125,6 +125,18 @@ class Participation(models.Model):
         choices=STATUS_CHOICES,
         default='pending',
         verbose_name='Stato iscrizione'
+    )
+
+    num_participates = models.PositiveIntegerField(default=1, help_text="Numero totale di partecipanti (utente + ospiti)")
+    
+    # Relazione con la moto del proprietario (utente)
+    motorcycle = models.ForeignKey(
+        'accounts.Motorcycle',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='partecipazioni',
+        verbose_name='Moto del partecipante'
     )
 
     class Meta:

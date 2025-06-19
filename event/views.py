@@ -2,8 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Event, Participation
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django import forms
+from .forms import ParticipationForm, ParticipationUpdateForm
+
 
 # Form per la creazione di un nuovo evento
 class EventForm(forms.ModelForm):
@@ -21,18 +23,42 @@ class EventForm(forms.ModelForm):
 
 def index(request):
     today = timezone.now()
-    events = Event.objects.filter(date__gte=today).order_by('date')
-    return render(request, "event/homepage.html", {"events": events})
+    # Eventi futuri ordinati per data (i 3 più vicini)
+    upcoming_events = (
+        Event.objects.filter(date__gte=today)
+        .annotate(num_participates=Sum('registrations__num_participates'))
+        .order_by('date')[:3]
+    )
+    # Eventi con iscrizioni aperte, ordinati per num partecipanti (i 3 più popolari)
+    popular_events = (
+        Event.objects.filter(date__gte=today)
+        .annotate(num_participates=Sum('registrations__num_participates'))
+        .filter(registration_start__lte=today, registration_end__gte=today, is_cancelled=False)
+        .order_by('-num_participates', 'date')[:3]
+    )
+
+    return render(request, "event/homepage.html", {
+        "upcoming_events": upcoming_events,
+        "popular_events": popular_events,
+    })
 
 def event_detail(request, id):
     event = get_object_or_404(Event, id=id)
     is_participating = False
+    participation = None
     if request.user.is_authenticated:
-        is_participating = Participation.objects.filter(user=request.user, event=event).exists()
+        participation = Participation.objects.filter(user=request.user, event=event).first()
+        is_participating = participation is not None
         is_organizer = request.user.groups.filter(id=2).exists()
+        if participation:
+            form = ParticipationUpdateForm(user=request.user, instance=participation)
+        else:
+            form = ParticipationForm(user=request.user)
     else:
         is_organizer = False
-    num_participates = Participation.objects.filter(event=event).count()
+        form = None
+    num_participates = Participation.objects.filter(event=event).aggregate(Sum('num_participates'))[
+                           'num_participates__sum'] or 0
     return render(
         request,
         "event/event.html",
@@ -41,22 +67,50 @@ def event_detail(request, id):
             "is_participating": is_participating,
             "num_participates": num_participates,
             "is_organizer": is_organizer,
+            "form": form,
         }
     )
 
 def list_event(request):
     today = timezone.now()
-    events = Event.objects.filter(date__gte=today).order_by('date').annotate(num_participates=Count('registrations'))
-    events_passed = Event.objects.filter(date__lt=today).order_by('date')
+    events = (
+        Event.objects.filter(date__gte=today)
+        .annotate(num_participates=Sum('registrations__num_participates'))
+        .order_by('date')
+    )
+    events_passed = (
+        Event.objects.filter(date__lt=today)
+        .annotate(num_participates=Sum('registrations__num_participates'))
+        .order_by('date')
+    )
     return render(request, "event/listEvents.html", {
         "events": events,
         "events_passed": events_passed,
+        "EVENT_TYPE_CHOICES": Event.EVENT_TYPE_CHOICES,
     })
 
 @login_required
 def participation_event(request, id):
     event = get_object_or_404(Event, id=id)
-    Participation.objects.get_or_create(user=request.user, event=event)
+    participation = Participation.objects.filter(user=request.user, event=event).first()
+    if request.method == "POST":
+        if participation:
+            form = ParticipationUpdateForm(request.POST, user=request.user, instance=participation)
+        else:
+            form = ParticipationForm(request.POST, user=request.user)
+        if form.is_valid():
+            participation = form.save(commit=False)
+            accompagnato = form.cleaned_data.get('accompagnato', 1)
+            participation.num_participates = accompagnato
+            participation.event = event
+            participation.user = request.user
+            participation.save()
+            return redirect('detail', id=id)
+    else:
+        if participation:
+            form = ParticipationUpdateForm(user=request.user, instance=participation)
+        else:
+            form = ParticipationForm(user=request.user)
     return redirect('detail', id=id)
 
 @login_required

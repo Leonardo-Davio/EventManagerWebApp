@@ -18,11 +18,21 @@
 {% endblock %}
 
 {% block main %}
-    <div class="position-fixed top-50 start-50 translate-middle w-100 ">
+    <div class="container my-5">
         <div class="mx-auto bg-secondary text-black p-4 rounded-5" style="max-width: 700px;">
             <form method="POST" class="form-group">
                 {% csrf_token %}
                 {{ form|crispy }}
+                <h5 class="mt-4">Le tue moto</h5>
+                {{ motorcycle_formset.management_form }}
+                {% for moto_form in motorcycle_formset %}
+                    <div class="border rounded p-2 mb-2 bg-light">
+                        {{ moto_form|crispy }}
+                        {% if moto_form.instance.pk %}
+                            <label>Elimina: {{ moto_form.DELETE }}</label>
+                        {% endif %}
+                    </div>
+                {% endfor %}
                 <button type="submit" class="btn btn-success">
                     Registrati
                 </button>

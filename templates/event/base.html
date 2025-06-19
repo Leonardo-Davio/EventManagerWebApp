@@ -125,7 +125,7 @@
             {% endblock %}
             <!-- Logo -->
             <div class="col d-flex justify-content-center">
-                <a class="navbar-brand" href="/event/static">
+                <a class="navbar-brand" href="{% url 'index' %}">
                     <img src="{% static 'images/logo2.png' %}" alt="Zero Gravity Logo" height="50">
                 </a>
             </div>
@@ -145,13 +145,15 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenuButton">
                             <li class="dropdown-header text-center text-black fw-bold fs-5">
-                                {{ user.username }}
+                                <a href="{% url 'profile' user.username %}" class="text-black text-decoration-none">
+                                    {{ user.username }}
+                                </a>
                             </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/dashboard">
+                                <a class="dropdown-item" href="{% url 'dashboard' %}">
                                     <i class="bi bi-speedometer2 me-2"></i>Dashboard
                                 </a>
                             </li>
@@ -159,7 +161,7 @@
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/settings">
+                                <a class="dropdown-item" href="{% url 'settings' %}">
                                     <i class="bi bi-gear me-2"></i>Impostazioni
                                 </a>
                             </li>

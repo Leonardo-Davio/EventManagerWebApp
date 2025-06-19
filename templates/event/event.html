@@ -4,136 +4,210 @@
 {% block title %}{{ event.title }}{% endblock %}
 
 {% block CustomStyle %}
-    .containerBody{
-    {% if event.image and event.image.url %}
-        background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{{ event.image.url }}');
-    {% else %}
-        background-image: linear-gradient(rgba(44,44,44,0.7),rgba(44,44,44,0.7)), url('{% static "images/DefaultImageEvent.jpg" %}');
-    {% endif %}
-    background-size: cover;
-    background-position: center;
-    overflow: auto;
-    height:100%;
+    .event-hero-img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 1rem 1rem 0 0;
     }
-    .noBgSection{
-    background-image: none !important;
-    background-color: transparent !important;
+    .event-card {
+    background: rgba(44,44,44,0.95);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
+    overflow: hidden;
+    }
+    .event-badge {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    }
+    .event-status-annullato {
+    background: #dc3545 !important;
+    color: #fff !important;
+    }
+    .event-status-aperto {
+    background: #198754 !important;
+    color: #fff !important;
+    }
+    .event-status-chiuso {
+    background: #6c757d !important;
+    color: #fff !important;
+    }
+    .event-status-nonaperto {
+    background: #ffc107 !important;
+    color: #212529 !important;
+    }
+    .event-info-label {
+    color: #00BCD4;
+    font-weight: 600;
     }
 {% endblock %}
 
 {% block main %}
-    <div class="containerBody">
-        <section class="text-center text-white py-5 noBgSection">
-            <h1 class="display-4 d-inline-block align-middle">{{ event.title }}</h1>
-            {% if is_organizer %}
-                <a href="{% url 'edit_event' event.id %}" class="btn btn-warning ms-3 align-middle">
-                    <i class="bi bi-pencil-square"></i> Modifica evento
-                </a>
-            {% endif %}
-        </section>
-        <section class="container py-4">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card bg-secondary text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Dettagli evento</h5>
-                            <ul class="list-unstyled">
-                                <li>
-                                    {{ event.description }}
-                                </li>
-                                <li>
-                                    <strong>Data:</strong>
-                                    {{ event.date|date:"d/m/Y H:i" }}
-                                </li>
-                                <li>
-                                    <strong>Evento di tipo:</strong>
-                                    {{ event.get_event_type_display }}
-                                </li>
-                                <li>
-                                    <strong>Luogo di ritrovo:</strong>
-                                    {{ event.location }}
-                                </li>
-                                {% if event.maps_link %}
-                                    <li>
-                                        <strong>Mappa del percorso:</strong>
-                                        {{ event.maps_link }}
-                                    </li>
-                                {% else %}
-                                    <li>
-                                        <strong>Raduno Statico</strong>
-                                    </li>
-                                {% endif %}
-                            </ul>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="event-card mb-4">
+                    <!-- Immagine evento -->
+                    <img class="event-hero-img"
+                         src="{% if event.image and event.image.url %}{{ event.image.url }}{% else %}{% static 'images/DefaultImageEvent.jpg' %}{% endif %}"
+                         alt="Immagine evento">
+                    <div class="p-4">
+                        <!-- Titolo e stato -->
+                        <div class="d-flex align-items-center mb-2">
+                            <h1 class="h3 mb-0 flex-grow-1">{{ event.title }}</h1>
+                            {% if event.status == "annullato" %}
+                                <span class="badge event-status-annullato ms-2">Annullato</span>
+                            {% elif event.status == "iscrizioni_aperte" %}
+                                <span class="badge event-status-aperto ms-2">Iscrizioni aperte</span>
+                            {% elif event.status == "iscrizioni_chiuse" %}
+                                <span class="badge event-status-chiuso ms-2">Iscrizioni chiuse</span>
+                            {% elif event.status == "iscrizioni_non_aperte" %}
+                                <span class="badge event-status-nonaperto ms-2">Iscrizioni non aperte</span>
+                            {% endif %}
                         </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col text-start">
-                            <a href="{% url 'index' %}" class="btn btn-primary">
-                                <i class="bi bi-arrow-left"></i> Torna agli eventi
+                        <!-- Organizzatore -->
+                        <div class="mb-3">
+                            <span class="me-2 event-info-label"><i
+                                    class="bi bi-person-circle"></i> Organizzatore:</span>
+                            <a href="{% url 'profile' event.organizer.username %}"
+                               class="text-accent text-decoration-none">
+                                {{ event.organizer.get_full_name|default:event.organizer.username }}
                             </a>
+                            {% if is_organizer %}
+                                <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm ms-2">
+                                    <i class="bi bi-pencil-square"></i> Modifica
+                                </a>
+                            {% endif %}
                         </div>
-                        <div class="col text-end">
-                            {% if user.is_authenticated %}
-                                {% if is_participating %}
-                                    <form action="{% url 'cancel_participation' event.id %}" method="post" style="display:inline;" class="cancel-form">
+                        <!-- Descrizione -->
+                        <p class="mb-3">{{ event.description }}</p>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6 mb-2">
+                                <span class="event-info-label"><i class="bi bi-geo-alt"></i> Luogo:</span>
+                                {% if event.location_link %}
+                                    <a href="{{ event.location_link }}" target="_blank"
+                                       class="text-accent text-decoration-none">
+                                        {{ event.location }}
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                {% else %}
+                                    {{ event.location }}
+                                {% endif %}
+                            </div>
+                            <div class="col-12 col-md-6 mb-2">
+                                <span class="event-info-label"><i class="bi bi-calendar-event"></i> Data evento:</span>
+                                {{ event.date|date:"d/m/Y H:i" }}
+                            </div>
+                            <div class="col-12 col-md-6 mb-2">
+                                <span class="event-info-label"><i class="bi bi-tag"></i> Tipo:</span>
+                                {{ event.get_event_type_display }}
+                            </div>
+                            <div class="col-12 col-md-6 mb-2">
+                                <span class="event-info-label"><i class="bi bi-people"></i> Partecipanti:</span>
+                                {{ num_participates }}
+                            </div>
+                            <div class="col-12 col-md-6 mb-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <span class="event-info-label"><i class="bi bi-clock-history"></i> Inizio iscrizioni:</span>
+                                        <div><strong>{{ event.registration_start|date:"d/m/Y H:i" }}</strong></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="event-info-label"><i class="bi bi-clock-history"></i> Fine iscrizioni:</span>
+                                        <div><strong>{{ event.registration_end|date:"d/m/Y H:i" }}</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if event.maps_link %}
+                                <div class="col-12 col-md-6 mb-2">
+                                    <span class="event-info-label"><i class="bi bi-map"></i> Percorso:</span>
+                                    <a href="{{ event.maps_link }}" target="_blank"
+                                       class="text-accent text-decoration-none">
+                                        Visualizza mappa <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Bottoni azione -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'index' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left"></i> Tutti gli eventi
+                            </a>
+                            {% if user.is_authenticated and is_participating %}
+                                <div>
+                                    <form method="post" action="{% url 'cancel_participation' event.id %}" class="d-inline">
                                         {% csrf_token %}
-                                        <input type="hidden" name="from_event" value="1" />
-                                        <button type="button" class="btn btn-danger" onclick="openCancelModal(this)">
-                                            <i class="bi bi-x-circle"></i> Annulla partecipazione
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-x-circle"></i> Cancella prenotazione
                                         </button>
                                     </form>
+                                    <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#partecipationModal">
+                                        <i class="bi bi-pencil"></i> Modifica prenotazione
+                                    </button>
+                                </div>
+                            {% elif event.status == "iscrizioni_aperte" %}
+                                {% if user.is_authenticated %}
+                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#partecipationModal">
+                                        <i class="bi bi-check-circle"></i> Partecipa
+                                    </button>
                                 {% else %}
-                                    <a href="{% url 'participate' event.id %}" class="btn btn-success">
-                                        <i class="bi bi-check-circle"></i> Partecipa all'evento
+                                    <a class="btn btn-success" href="{% url 'login' %}?next={% url 'detail' event.id %}">
+                                        <i class="bi bi-check-circle"></i> Partecipa
                                     </a>
                                 {% endif %}
-                            {% else %}
-                                <a href="{% url 'login' %}?next={% url 'participate' event.id %}" class="btn btn-success">
-                                    <i class="bi bi-check-circle"></i> Partecipa all'evento
-                                </a>
+                            {% elif event.status == "iscrizioni_chiuse" or event.status == "iscrizioni_non_aperte" %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="bi bi-lock"></i> Iscrizioni chiuse
+                                </button>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-        <!-- Modal di conferma cancellazione -->
-        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-dark text-white">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cancelModalLabel">Conferma cancellazione</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                aria-label="Chiudi"></button>
+                <!-- Se l'evento è annullato, mostra avviso -->
+                {% if event.status == "annullato" %}
+                    <div class="alert alert-danger text-center">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Questo evento è stato annullato dall'organizzatore.
                     </div>
-                    <div class="modal-body">
-                        Sei sicuro di voler cancellare la prenotazione per questo evento?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-                        <button type="button" class="btn btn-danger" id="confirmCancelBtn">Conferma</button>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
-        <script>
-            let formToSubmit = null;
-            function openCancelModal(button) {
-                formToSubmit = button.closest('form');
-                var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
-                modal.show();
-            }
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('confirmCancelBtn').addEventListener('click', function() {
-                    if (formToSubmit) {
-                        formToSubmit.submit();
-                    }
-                });
-            });
-        </script>
+    </div>
+
+    <!-- Modal popup per partecipazione/modifica -->
+    <div class="modal fade" id="partecipationModal" tabindex="-1" aria-labelledby="partecipationModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="partecipationModalLabel">Partecipa all'evento</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <form id="partecipationForm" method="post" action="{% url 'participate' event.id %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="motoSelect" class="form-label">Con quale moto partecipi?</label>
+                    {{ form.motorcycle }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_accompagnato" class="form-label">Numero totale di persone (incluso te)</label>
+                    {{ form.accompagnato }}
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+              <button type="submit" class="btn btn-success">Conferma prenotazione</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 {% endblock %}
 
-
-<!-- Assicurati che Bootstrap JS sia incluso nel template base, ad esempio: -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Se vuoi validazione JS aggiuntiva, puoi inserirla qui
+});
+</script>
+{% endblock %}

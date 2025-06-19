@@ -1,0 +1,61 @@
+{% extends "event/base.html" %}
+{% block title %}Profilo di {{ user_profile.username }}{% endblock %}
+
+{% block main %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">Profilo utente</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Username</dt>
+                        <dd class="col-sm-8">{{ user_profile.username }}</dd>
+
+                        <dt class="col-sm-4">Nome</dt>
+                        <dd class="col-sm-8">{{ user_profile.first_name }}</dd>
+
+                        <dt class="col-sm-4">Cognome</dt>
+                        <dd class="col-sm-8">{{ user_profile.last_name }}</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ user_profile.email }}</dd>
+
+                        <dt class="col-sm-4">Telefono</dt>
+                        <dd class="col-sm-8">{{ user_profile.phone }}</dd>
+                    </dl>
+                    {% if is_owner %}
+                        <a href="{% url 'settings' %}" class="btn btn-primary mt-3">
+                            <i class="bi bi-gear"></i> Modifica profilo
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Moto in possesso</h4>
+                </div>
+                <div class="card-body">
+                    {% if motorcycles %}
+                        <ul class="list-group">
+                            {% for moto in motorcycles %}
+                                <li class="list-group-item">
+                                    <strong>{{ moto.brand }} {{ moto.model }}</strong>
+                                    {% if moto.year %} ({{ moto.year }}){% endif %}
+                                    {% if moto.displacement %} - {{ moto.displacement }}cc{% endif %}
+                                    {% if moto.notes %}<br><small>{{ moto.notes }}</small>{% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Nessuna moto registrata.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

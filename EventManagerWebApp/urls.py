@@ -24,9 +24,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("event.urls")),
     path('account/', include('accounts.urls')),
-    path('', include("django.contrib.auth.urls")),
+    path('', include("django.contrib.auth.urls")),  # <-- questa include /login/
     path('register/', v.RegisterView.as_view(), name='register'),
-    path('dashboard/', v.DashboardView.as_view(), name='dashboard'),  # aggiunto qui
+    path('dashboard/', v.DashboardView.as_view(), name='dashboard'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

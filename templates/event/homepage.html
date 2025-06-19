@@ -1,62 +1,143 @@
 {% extends 'event/base.html' %}
+{% load static %}
+
+{% block CustomStyle %}
+.hero-bg {
+    background: linear-gradient(rgba(30,30,30,0.7), rgba(30,30,30,0.7)), url("{% static 'images/DefaultImageEvent.jpg' %}") center/cover no-repeat;
+    min-height: 350px;
+    border-radius: 1rem;
+}
+.event-card-home {
+    background: rgba(44,44,44,0.95);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+.event-card-home:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 1rem 2rem rgba(0,0,0,0.4);
+}
+.event-badge {
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+}
+/* Sfondo scuro per la sezione popolari */
+.bg-popular-dark {
+    background: linear-gradient(135deg, #181a1b 60%, #23272b 100%);
+    color: #fff;
+}
+{% endblock %}
 
 {% block main %}
-    <section class="section-hero text-center text-white py-5 mb-5">
-        <h1 class="display-4"> Benvenuto a Zero Gravity Events</h1>
-        <p class="lead">
-            La community per gli appassionati di moto e adrenalina.
-        </p>
-    </section>
-    <section id="eventi" class="py-5 bg-dark text-white">
-        <div class=" container">
-            <h2 class="text-center">Eventi in arrivo</h2>
-            <div class="row g-4">
-                {# Itera su tutti gli eventi futuri, non solo i primi 3 #}
-                {% for event in events %}
-                    <a class="col-12 col-lg-4 mb-4 text-decoration-none" href="{% url 'detail' event.id %}">
-                        <div class="card bg-secondary text-white h-100">
-                            <div class="card-body">
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        {% if event.image %}
-                                            <img src="{{ event.image.url }}" class="img-fluid rounded"
-                                                 alt="{{ event.title }}">
-                                        {% else %}
-                                            {% if event.image %}
-                                                <img src="{{ event.image.url }}"
-                                                     class="img-fluid rounded" alt="Immagine evento">
-                                            {% else %}
-                                                <img src="../../event/static/images/DefaultImageEvent.jpg"
-                                                     class="img-fluid rounded" alt="Immagine evento">
-                                            {% endif %}
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-8">
-                                        <h5 class="card-title">{{ event.title }}</h5>
-                                        <p class="card-text mb-0">
-                                            <small>Data: {{ event.date|date:"d/m/Y H:i" }}</small>
-                                        </p>
-                                        <p class="card-text mb-0">{{ event.get_event_type_display }}</p>
-                                        <p class="card-text mb-0">Punto di ritrovo: {{ event.location }}</p>
-                                    </div>
+<section class="hero-bg text-center text-white py-5 mb-5 d-flex flex-column justify-content-center align-items-center">
+    <h1 class="display-4 fw-bold mb-3">Zero Gravity Events</h1>
+    <p class="lead mb-4">
+        La community per gli appassionati di moto e adrenalina.<br>
+        Scopri, partecipa e vivi esperienze uniche su due ruote!
+    </p>
+</section>
+
+<section id="prossimi-eventi" class="py-5 bg-dark text-white rounded mb-3">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">I prossimi eventi</h2>
+            <a href="{% url 'events' %}" class="btn btn-primary btn-lg shadow">
+                <i class="bi bi-calendar3"></i> Vedi tutti gli eventi
+            </a>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for event in upcoming_events %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <a href="{% url 'detail' event.id %}" class="text-decoration-none">
+                        <div class="event-card-home card h-100 text-white border-0">
+                            <div class="ratio ratio-16x9">
+                                {% if event.image %}
+                                    <img src="{{ event.image.url }}" class="card-img-top object-fit-cover" alt="{{ event.title }}">
+                                {% else %}
+                                    <img src="{% static 'images/DefaultImageEvent.jpg' %}" class="card-img-top object-fit-cover" alt="Immagine evento">
+                                {% endif %}
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary event-badge">{{ event.get_event_type_display }}</span>
+                                    <span class="badge bg-success event-badge">
+                                        <i class="bi bi-people"></i> {{ event.num_participates|default:"0" }}
+                                    </span>
+                                </div>
+                                <h5 class="card-title mb-1">{{ event.title }}</h5>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                </p>
+                                <p class="card-text mb-2">
+                                    <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
+                                </p>
+                                <div class="mt-auto">
+                                    <span class="btn btn-outline-light btn-sm w-100">Dettagli evento</span>
                                 </div>
                             </div>
                         </div>
                     </a>
-                {% empty %}
-                    <div class="col-12">
-                        <p class="text-center">Nessun evento futuro disponibile.</p>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning text-center mt-4">
+                        <i class="bi bi-emoji-frown"></i> Nessun evento futuro disponibile.
                     </div>
-                {% endfor %}
-            </div>
-            <!-- Pulsante per vedere tutti gli eventi -->
-            <div class="row mt-4">
-                <div class="col text-center">
-                    <a href="{% url 'events' %}" class="btn btn-primary btn-lg">
-                        Vedi tutti gli eventi
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section id="eventi-popolari" class="py-5 bg-popular-dark rounded">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0" style="color:#fff;">Eventi più popolari (iscrizioni aperte)</h2>
+            <a href="{% url 'events' %}?sort=partecipanti_desc&status=iscrizioni_aperte" class="btn btn-primary btn-lg shadow">
+                <i class="bi bi-calendar3"></i> Vedi tutti gli eventi
+            </a>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for event in popular_events %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <a href="{% url 'detail' event.id %}" class="text-decoration-none">
+                        <div class="event-card-home card h-100 border-0" style="color:#fff; background:rgba(30,30,30,0.95);">
+                            <div class="ratio ratio-16x9">
+                                {% if event.image %}
+                                    <img src="{{ event.image.url }}" class="card-img-top object-fit-cover" alt="{{ event.title }}">
+                                {% else %}
+                                    <img src="{% static 'images/DefaultImageEvent.jpg' %}" class="card-img-top object-fit-cover" alt="Immagine evento">
+                                {% endif %}
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary event-badge">{{ event.get_event_type_display }}</span>
+                                    <span class="badge bg-success event-badge">
+                                        <i class="bi bi-people"></i> {{ event.num_participates|default:"0" }}
+                                    </span>
+                                </div>
+                                <h5 class="card-title mb-1">{{ event.title }}</h5>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                </p>
+                                <p class="card-text mb-2">
+                                    <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
+                                </p>
+                                <div class="mt-auto">
+                                    <span class="btn btn-outline-light btn-sm w-100">Dettagli evento</span>
+                                </div>
+                            </div>
+                        </div>
                     </a>
                 </div>
-            </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning text-center mt-4" style="color:#fff;">
+                        <i class="bi bi-emoji-frown"></i> Nessun evento popolare con iscrizioni aperte.
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-    </section>
+    </div>
+</section>
 {% endblock %}
