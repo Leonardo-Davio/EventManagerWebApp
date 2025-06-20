@@ -5,9 +5,9 @@ from .models import Event, Participation
 from django.db.models import Sum
 from django import forms
 from .forms import ParticipationForm, ParticipationUpdateForm
+from datetime import timedelta
 
 
-# Form per la creazione di un nuovo evento
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
@@ -28,18 +28,15 @@ class EventForm(forms.ModelForm):
         registration_end = cleaned_data.get('registration_end')
         now = timezone.now()
 
-        # L'evento deve essere almeno domani
         if date:
-            tomorrow = (now + timezone.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+            tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
             if date < tomorrow:
                 self.add_error('date', "La data dell'evento deve essere almeno domani.")
 
-        # Le iscrizioni si possono aprire al minimo al giorno stesso e all'orario corrente
         if registration_start:
             if registration_start < now:
                 self.add_error('registration_start', "Le iscrizioni possono aprirsi solo da ora in poi.")
 
-        # Le iscrizioni non si possono chiudere dopo l'inizio evento o prima dell'apertura iscrizioni
         if registration_end and registration_start and date:
             if registration_end > date:
                 self.add_error('registration_end', "La chiusura iscrizioni non può essere dopo l'inizio dell'evento.")
@@ -50,13 +47,11 @@ class EventForm(forms.ModelForm):
 
 def index(request):
     today = timezone.now()
-    # Eventi futuri ordinati per data (i 3 più vicini)
     upcoming_events = (
         Event.objects.filter(date__gte=today)
         .annotate(num_participates=Sum('registrations__num_participates'))
         .order_by('date')[:3]
     )
-    # Eventi con iscrizioni aperte, ordinati per num partecipanti (i 3 più popolari)
     popular_events = (
         Event.objects.filter(date__gte=today)
         .annotate(num_participates=Sum('registrations__num_participates'))
@@ -72,7 +67,6 @@ def index(request):
 def event_detail(request, id):
     event = get_object_or_404(Event, id=id)
     is_participating = False
-    participation = None
     if request.user.is_authenticated:
         participation = Participation.objects.filter(user=request.user, event=event).first()
         is_participating = participation is not None
@@ -87,7 +81,6 @@ def event_detail(request, id):
     num_participates = Participation.objects.filter(event=event).aggregate(Sum('num_participates'))[
                            'num_participates__sum'] or 0
 
-    # Aggiungi la lista dei partecipanti se l'utente è organizzatore
     participants = []
     if is_organizer:
         participants = Participation.objects.filter(event=event).select_related('user')
@@ -101,7 +94,7 @@ def event_detail(request, id):
             "num_participates": num_participates,
             "is_organizer": is_organizer,
             "form": form,
-            "participants": participants,  # aggiunto
+            "participants": participants,
         }
     )
 
@@ -151,7 +144,6 @@ def participation_event(request, id):
 def cancel_participation(request, id):
     event = get_object_or_404(Event, id=id)
     Participation.objects.filter(user=request.user, event=event).delete()
-    # Controlla se il form ha il campo 'from_dashboard'
     if request.POST.get('from_dashboard') == '1':
         return redirect('dashboard')
     return redirect('detail', id=id)
@@ -169,11 +161,9 @@ def new_event(request):
                     event.save()
                     return redirect('detail', id=event.id)
             else:
-                # Imposta la data di default a domani alle 9:00
                 from django.utils import timezone
-                import datetime
                 now = timezone.now()
-                tomorrow_9 = (now + timezone.timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+                tomorrow_9 = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
                 form = EventForm(initial={'date': tomorrow_9.strftime('%Y-%m-%dT%H:%M')})
             return render(request, "event/newEvent.html", {"form": form})
     return redirect('events')

@@ -5,11 +5,6 @@ from django.db.models import JSONField
 
 
 class Event(models.Model):
-    """
-    Modello per eventi motociclistici con gestione automatica
-    della città in base al link di Maps.
-    """
-    # Tipologie di evento
     EVENT_TYPE_CHOICES = [
         ('statico', 'Motoraduni statici'),
         ('itinerante', 'Motoraduni itineranti'),
@@ -18,7 +13,6 @@ class Event(models.Model):
         ('trackday', 'Trackday'),
     ]
 
-    # FK all'organizzatore principale
     organizer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -38,8 +32,6 @@ class Event(models.Model):
         null=True,
         help_text='Link del ritrovo'
     )
-
-    # Link al percorso su Maps (opzionale)
     maps_link = models.URLField(
         max_length=500,
         blank=True,
@@ -56,7 +48,6 @@ class Event(models.Model):
         verbose_name='Tipo di evento'
     )
 
-    # Date per apertura e chiusura delle iscrizioni
     registration_start = models.DateTimeField(
         verbose_name='Inizio iscrizioni',
         help_text='Quando si aprono le iscrizioni'
@@ -66,7 +57,6 @@ class Event(models.Model):
         help_text='Quando scadono le iscrizioni'
     )
 
-    # Flag per cancellazione manuale
     is_cancelled = models.BooleanField(
         default=False,
         verbose_name="Annullato dall'organizzatore",
@@ -78,14 +68,6 @@ class Event(models.Model):
 
     @property
     def status(self):
-        """
-        Restituisce lo stato corrente dell'evento:
-          - 'annullato' se is_cancelled=True
-          - 'passato' se date < now
-          - 'iscrizioni_non_aperte' se now < registration_start
-          - 'iscrizioni_aperte' se registration_start <= now <= registration_end
-          - 'iscrizioni_chiuse' se now > registration_end e date > now
-        """
         now = timezone.now()
 
         if self.is_cancelled:
@@ -100,9 +82,6 @@ class Event(models.Model):
 
 
 class Participation(models.Model):
-    """
-    Modello per la registrazione degli utenti agli eventi.
-    """
     STATUS_CHOICES = [
         ('pending', 'In attesa'),
         ('confirmed', 'Confermata'),
@@ -128,8 +107,7 @@ class Participation(models.Model):
     )
 
     num_participates = models.PositiveIntegerField(default=1, help_text="Numero totale di partecipanti (utente + ospiti)")
-    
-    # Relazione con la moto del proprietario (utente)
+
     motorcycle = models.ForeignKey(
         'accounts.Motorcycle',
         on_delete=models.SET_NULL,

@@ -15,12 +15,10 @@
     <div class="container my-5" style="background-color: #1A1A1A;">
         <h2 class="mb-4 text-center text-white">Calendario Eventi</h2>
 
-        <!-- Eventi futuri -->
         <div class="d-flex align-items-center mb-3 mt-4">
             <h4 class="text-success mb-0 me-3 d-flex align-items-center">
                 <i class="bi bi-calendar-event"></i> Eventi futuri
             </h4>
-            <!-- Pulsante filtro -->
             <div class="dropdown">
                 <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="filterDropdown"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -43,7 +41,6 @@
                                    class="form-control form-control-sm bg-dark text-white border-secondary"
                                    placeholder="Titolo o luogo...">
                         </div>
-
                         <div class="col-12 col-md-3 border-end mb-2 mb-md-0">
                             <div class="fw-bold mb-2">Categorie</div>
                             <form id="categoryCheckboxes">
@@ -174,7 +171,6 @@
                     </div>
                 </div>
             {% endfor %}
-            <!-- Card vuota per filtri JS -->
             <div class="col event-card-empty d-none">
                 <div class="card h-100 bg-dark text-white border-secondary shadow-sm d-flex flex-column justify-content-center align-items-center">
                     <div class="card-body text-center">
@@ -189,7 +185,6 @@
             </div>
         </div>
 
-        <!-- Eventi passati (mostrati solo se presenti) -->
         {% if events_passed %}
             <div class="container d-block">
                 <h4 class="mb-3 mt-5 text-white d-flex align-items-center" id="pastEventsTitle"
@@ -236,11 +231,9 @@
     </div>
 
     <script>
-        // Filtro eventi per categoria, status, data, ricerca e ordinamento
         document.addEventListener('DOMContentLoaded', function () {
             const checkboxes = document.querySelectorAll('.category-checkbox');
             const statusCheckboxes = document.querySelectorAll('.status-checkbox');
-            const futureEvents = document.getElementById('futureEvents');
             const resetBtn = document.getElementById('resetFilters');
             const clearBtn = document.getElementById('clearCategories');
             const onlyOpenBtn = document.getElementById('onlyOpenRegistrations');
@@ -248,7 +241,6 @@
             const dateTo = document.getElementById('dateTo');
             const sortSelect = document.getElementById('sortSelect');
             const searchInput = document.getElementById('searchInput');
-            const pastEvents = document.getElementById('pastEvents');
 
             function saveFilters() {
                 const cats = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
@@ -283,7 +275,6 @@
                 const to = dateTo.value ? new Date(dateTo.value) : null;
                 const search = searchInput.value.trim().toLowerCase();
                 let cards = Array.from(document.querySelectorAll('#futureEvents .event-card'));
-                // Filtro
                 let count = 0;
                 cards.forEach(card => {
                     const cat = card.dataset.category;
@@ -301,7 +292,6 @@
                     card.style.display = show ? '' : 'none';
                     if (show) count++;
                 });
-                // Ordinamento
                 const sortVal = sortSelect.value;
                 cards = cards.filter(card => card.style.display !== 'none');
                 cards.sort((a, b) => {
@@ -319,10 +309,8 @@
                     }
                     return 0;
                 });
-                // Riordina nel DOM
                 const parent = document.getElementById('futureEvents');
                 cards.forEach(card => parent.appendChild(card));
-                // Card vuota se nessun evento
                 const emptyCard = document.querySelector('#futureEvents .event-card-empty');
                 if (emptyCard) emptyCard.classList.toggle('d-none', count !== 0);
                 saveFilters();
@@ -355,27 +343,23 @@
                 filterAndSortCards();
             });
 
-            // --- INIZIO: Lettura parametri GET per filtro automatico ---
             function getUrlParam(name) {
                 const url = new URL(window.location.href);
                 return url.searchParams.get(name);
             }
-            // Applica filtro se arrivo dalla home "popolari"
+
             const urlSort = getUrlParam('sort');
             const urlStatus = getUrlParam('status');
             if (urlSort) {
                 sortSelect.value = urlSort;
             }
             if (urlStatus) {
-                // Deseleziona tutti e seleziona solo quello richiesto
                 statusCheckboxes.forEach(cb => cb.checked = false);
                 statusCheckboxes.forEach(cb => {
                     if (cb.value === urlStatus) cb.checked = true;
                 });
             }
-            // --- FINE: Lettura parametri GET ---
 
-            // Avvio
             loadFilters();
             filterAndSortCards();
         });

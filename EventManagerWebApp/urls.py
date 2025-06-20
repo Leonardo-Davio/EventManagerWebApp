@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("event.urls")),
     path('account/', include('accounts.urls')),
-    path('login/', v.CustomLoginView.as_view(), name='login'),  # <--- AGGIUNGI QUESTA RIGA
+    path('login/', v.CustomLoginView.as_view(), name='login'),
     path('register/', v.RegisterView.as_view(), name='register'),
     path('dashboard/', v.DashboardView.as_view(), name='dashboard'),
 ]

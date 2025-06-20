@@ -14,10 +14,8 @@ class ParticipationForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         super().__init__(*args, **kwargs)
         if user is not None:
-            # Import qui per evitare import circolare
             from accounts.models import Motorcycle
             self.fields['motorcycle'].queryset = Motorcycle.objects.filter(owner=user)
-        # Imposta il valore iniziale di accompagnato su num_participates se instance è presente
         if instance is not None and hasattr(instance, "num_participates"):
             self.fields['accompagnato'].initial = instance.num_participates
 
@@ -40,7 +38,6 @@ class ParticipationUpdateForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         super().__init__(*args, **kwargs)
         if user is not None:
-            # Import qui per evitare import circolare
             from accounts.models import Motorcycle
             self.fields['motorcycle'].queryset = Motorcycle.objects.filter(owner=user)
         if instance is not None and hasattr(instance, "num_participates"):

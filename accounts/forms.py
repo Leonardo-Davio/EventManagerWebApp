@@ -24,9 +24,7 @@ class RegistrationForm(UserCreationForm):
 
     def clean_phone(self):
         phone = self.cleaned_data['phone']
-        # Rimuovi spazi e trattini
         phone = phone.replace(" ", "").replace("-", "")
-        # Regex: opzionale +39, poi 9-15 cifre
         if not re.fullmatch(r'(\+39)?\d{9,15}', phone):
             raise forms.ValidationError("Inserisci un numero di telefono italiano valido (9-15 cifre, opzionale +39).")
         return phone

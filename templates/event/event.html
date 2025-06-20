@@ -42,30 +42,30 @@
     }
     /* Stile lista partecipanti */
     .participants-card {
-        background: rgba(44,44,44,0.95);
-        border-radius: 1rem;
-        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
-        overflow: hidden;
+    background: rgba(44,44,44,0.95);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
+    overflow: hidden;
     }
     .participants-header {
-        background: #0d6efd;
-        color: #fff;
-        border-radius: 1rem 1rem 0 0;
-        font-weight: 600;
-        font-size: 1.1rem;
-        padding: 0.75rem 1.25rem;
+    background: #0d6efd;
+    color: #fff;
+    border-radius: 1rem 1rem 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 0.75rem 1.25rem;
     }
     .participants-list .list-group-item {
-        background: transparent;
-        color: #fff;
-        border: none;
-        border-bottom: 1px solid #222;
+    background: transparent;
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #222;
     }
     .participants-list .list-group-item:last-child {
-        border-bottom: none;
+    border-bottom: none;
     }
     .participants-list .badge {
-        font-size: 0.95em;
+    font-size: 0.95em;
     }
 {% endblock %}
 
@@ -76,10 +76,12 @@
                 <div class="event-card mb-4">
                     <!-- Immagine evento -->
                     <img class="event-hero-img"
-                         src="{% if event.image and event.image.url %}{{ event.image.url }}{% else %}{% static 'images/DefaultImageEvent.jpg' %}{% endif %}"
+                         src="{% if event.image and event.image.url %}
+                                {{ event.image.url }}
+                                {% else %}
+                                {% static 'images/DefaultImageEvent.jpg' %}{% endif %}"
                          alt="Immagine evento">
                     <div class="p-4">
-                        <!-- Titolo e stato -->
                         <div class="d-flex align-items-center mb-2">
                             <h1 class="h3 mb-0 flex-grow-1">{{ event.title }}</h1>
                             {% if event.status == "annullato" %}
@@ -92,13 +94,16 @@
                                 <span class="badge event-status-nonaperto ms-2">Iscrizioni non aperte</span>
                             {% endif %}
                         </div>
-                        <!-- Organizzatore -->
                         <div class="mb-3">
                             <span class="me-2 event-info-label"><i
                                     class="bi bi-person-circle"></i> Organizzatore:</span>
                             <a href="{% url 'profile' event.organizer.username %}"
                                class="text-accent text-decoration-none">
-                                {{ event.organizer.get_full_name|default:event.organizer.username }}
+                                {% if event.organizer.get_full_name %}
+                                    {{ event.organizer.get_full_name }}
+                                {% else %}
+                                    {{ event.organizer.username }}
+                                {% endif %}
                             </a>
                             {% if is_organizer %}
                                 <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm ms-2">
@@ -106,7 +111,6 @@
                                 </a>
                             {% endif %}
                         </div>
-                        <!-- Descrizione -->
                         <p class="mb-3">{{ event.description }}</p>
                         <div class="row mb-3">
                             <div class="col-12 col-md-6 mb-2">
@@ -123,7 +127,7 @@
                             </div>
                             <div class="col-12 col-md-6 mb-2">
                                 <span class="event-info-label"><i class="bi bi-calendar-event"></i> Data evento:</span>
-                                {{ event.date|date:"d/m/Y H:i" }}
+                                {{ event.date|date:"d/m/Y H:i"}}
                             </div>
                             <div class="col-12 col-md-6 mb-2">
                                 <span class="event-info-label"><i class="bi bi-tag"></i> Tipo:</span>
@@ -155,30 +159,33 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <!-- Bottoni azione -->
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'index' %}" class="btn btn-outline-primary">
                                 <i class="bi bi-arrow-left"></i> Tutti gli eventi
                             </a>
                             {% if user.is_authenticated and is_participating %}
                                 <div>
-                                    <form method="post" action="{% url 'cancel_participation' event.id %}" class="d-inline">
+                                    <form method="post" action="{% url 'cancel_participation' event.id %}"
+                                          class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-danger">
                                             <i class="bi bi-x-circle"></i> Cancella prenotazione
                                         </button>
                                     </form>
-                                    <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#partecipationModal">
+                                    <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal"
+                                            data-bs-target="#partecipationModal">
                                         <i class="bi bi-pencil"></i> Modifica prenotazione
                                     </button>
                                 </div>
                             {% elif event.status == "iscrizioni_aperte" %}
                                 {% if user.is_authenticated %}
-                                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#partecipationModal">
+                                    <button class="btn btn-success" data-bs-toggle="modal"
+                                            data-bs-target="#partecipationModal">
                                         <i class="bi bi-check-circle"></i> Partecipa
                                     </button>
                                 {% else %}
-                                    <a class="btn btn-success" href="{% url 'login' %}?next={% url 'detail' event.id %}">
+                                    <a class="btn btn-success"
+                                       href="{% url 'login' %}?next={% url 'detail' event.id %}">
                                         <i class="bi bi-check-circle"></i> Partecipa
                                     </a>
                                 {% endif %}
@@ -190,84 +197,80 @@
                         </div>
                     </div>
                 </div>
-                <!-- Se l'evento è annullato, mostra avviso -->
                 {% if event.status == "annullato" %}
                     <div class="alert alert-danger text-center">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         Questo evento è stato annullato dall'organizzatore.
                     </div>
                 {% endif %}
-
                 {% if is_organizer %}
-                <!-- Lista partecipanti per l'organizzatore, stile uniforme -->
-                <div class="participants-card mt-4">
-                    <div class="participants-header">
-                        <i class="bi bi-people"></i> Lista partecipanti
+                    <div class="participants-card mt-4">
+                        <div class="participants-header">
+                            <i class="bi bi-people"></i> Lista partecipanti
+                        </div>
+                        <ul class="list-group participants-list list-group-flush">
+                            {% if participants %}
+                                {% for p in participants %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <a href="{% url 'profile' p.user.username %}"
+                                               class="text-decoration-none text-info">
+                                                {% if event.organizer.get_full_name %}
+                                                    {{ event.organizer.get_full_name }}
+                                                {% else %}
+                                                    {{ event.organizer.username }}
+                                                {% endif %}
+                                            </a>
+                                            {% if p.motorcycle %}
+                                                <span class="ms-2 text-light small">
+                                                    <i class="bi bi-bicycle"></i>
+                                                    {{ p.motorcycle.brand }} {{ p.motorcycle.model }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-secondary">
+                                            {{ p.num_participates }} persona{{ p.num_participates|pluralize:"e" }}
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item text-muted">Nessun partecipante ancora.</li>
+                            {% endif %}
+                        </ul>
                     </div>
-                    <ul class="list-group participants-list list-group-flush">
-                        {% if participants %}
-                            {% for p in participants %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <a href="{% url 'profile' p.user.username %}" class="text-decoration-none text-info">
-                                            {{ p.user.get_full_name|default:p.user.username }}
-                                        </a>
-                                        {% if p.motorcycle %}
-                                            <span class="ms-2 text-light small">
-                                                <i class="bi bi-bicycle"></i>
-                                                {{ p.motorcycle.brand }} {{ p.motorcycle.model }}
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <span class="badge bg-secondary">
-                                        {{ p.num_participates }} persona{{ p.num_participates|pluralize:"e" }}
-                                    </span>
-                                </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-muted">Nessun partecipante ancora.</li>
-                        {% endif %}
-                    </ul>
-                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Modal popup per partecipazione/modifica -->
-    <div class="modal fade" id="partecipationModal" tabindex="-1" aria-labelledby="partecipationModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content bg-dark text-white">
-          <div class="modal-header">
-            <h5 class="modal-title" id="partecipationModalLabel">Partecipa all'evento</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-          </div>
-          <form id="partecipationForm" method="post" action="{% url 'participate' event.id %}">
-            {% csrf_token %}
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="motoSelect" class="form-label">Con quale moto partecipi?</label>
-                    {{ form.motorcycle }}
+    <div class="modal fade" id="partecipationModal" tabindex="-1" aria-labelledby="partecipationModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="partecipationModalLabel">Partecipa all'evento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Chiudi"></button>
                 </div>
-                <div class="mb-3">
-                    <label for="id_accompagnato" class="form-label">Numero totale di persone (incluso te)</label>
-                    {{ form.accompagnato }}
-                </div>
+                <form id="partecipationForm" method="post" action="{% url 'participate' event.id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="motoSelect" class="form-label">Con quale moto partecipi?</label>
+                            {{ form.motorcycle }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_accompagnato" class="form-label">Numero totale di persone (incluso
+                                te)</label>
+                            {{ form.accompagnato }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-success">Conferma prenotazione</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
-              <button type="submit" class="btn btn-success">Conferma prenotazione</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Se vuoi validazione JS aggiuntiva, puoi inserirla qui
-});
-</script>
 {% endblock %}

@@ -17,6 +17,7 @@ from .forms import RegistrationForm, CustomPasswordChangeForm, UserUpdateForm, M
 from .models import Motorcycle, User
 
 # Create your views here.
+
 class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
 class RegisterView(CreateView):
@@ -110,17 +111,14 @@ class SettingsView(FormView):
                 'moto_formset': moto_formset,
             })
         elif 'moto_submit' in request.POST:
-            # Gestione aggiunta/modifica/eliminazione moto
-            user_form = self.form_class(instance=request.user)  # <-- NON passare request.POST!
+            user_form = self.form_class(instance=request.user)
             password_form = CustomPasswordChangeForm(user=request.user)
             moto_formset = MotorcycleFormSet(request.POST, queryset=Motorcycle.objects.filter(owner=request.user))
             if moto_formset.is_valid():
                 instances = moto_formset.save(commit=False)
-                # Assegna l'owner alle nuove moto
                 for instance in instances:
                     instance.owner = request.user
                     instance.save()
-                # Elimina le moto segnate per la cancellazione
                 for obj in moto_formset.deleted_objects:
                     obj.delete()
                 return render(request, self.template_name, {
@@ -135,7 +133,6 @@ class SettingsView(FormView):
                 'moto_formset': moto_formset,
             })
         else:
-            # Update dati utente
             user_form = self.get_form()
             password_form = CustomPasswordChangeForm(user=request.user)
             moto_formset = MotorcycleFormSet(queryset=Motorcycle.objects.filter(owner=request.user))
@@ -179,14 +176,12 @@ class ProfileView(DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        # Solo organizzatori possono modificare altri utenti
         if not (request.user.is_authenticated and request.user.groups.filter(name='Organizer').exists()):
             return self.get(request, *args, **kwargs)
         user_profile = self.get_object()
         is_owner_user = getattr(user_profile, "is_owner", False)
         organizer_group, _ = Group.objects.get_or_create(name='Organizer')
         action = request.POST.get("action")
-        # Non permettere di togliere il ruolo all'owner
         if action == "add_organizer":
             if not user_profile.groups.filter(name='Organizer').exists():
                 user_profile.groups.add(organizer_group)

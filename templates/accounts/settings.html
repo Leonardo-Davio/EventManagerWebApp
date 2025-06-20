@@ -68,7 +68,6 @@
                                 <div id="moto-list">
                                     {% for form in moto_formset %}
                                         <div class="border rounded p-3 mb-3 position-relative moto-form-block" data-form-index="{{ forloop.counter0 }}">
-                                            {# Mostra tutti i campi tranne DELETE #}
                                             {% for field in form.visible_fields %}
                                                 {% if field.name != form.prefix|add:'-DELETE' %}
                                                     {{ field|as_crispy_field }}
@@ -81,7 +80,6 @@
                                                     </button>
                                                 {% endif %}
                                             </div>
-                                            {# Nascondi sempre il checkbox DELETE come hidden #}
                                             {% for hidden in form.hidden_fields %}
                                                 {{ hidden }}
                                             {% endfor %}
@@ -89,7 +87,6 @@
                                     {% endfor %}
                                 </div>
                                 <div id="new-moto-form" style="display:none;">
-                                    <!-- Il nuovo form vuoto sarà inserito qui via JS -->
                                 </div>
                                 <div class="d-flex justify-content-end mt-3">
                                     <button type="submit" class="btn btn-primary">
@@ -111,17 +108,14 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Mostra il form per la password
         document.getElementById('showPasswordFormBtn').addEventListener('click', function () {
             document.getElementById('passwordFormContainer').style.display = 'block';
             this.style.display = 'none';
         });
 
-        // Gestione elimina moto (flagga il checkbox DELETE)
         function updateDeleteButtons() {
             let motoBlocks = document.querySelectorAll('.moto-form-block');
             let deleteBtns = document.querySelectorAll('.delete-moto-btn');
-            // Disabilita il delete se c'è solo una moto
             if (motoBlocks.length <= 1) {
                 deleteBtns.forEach(btn => btn.style.display = 'none');
             } else {
@@ -141,7 +135,6 @@
         });
         updateDeleteButtons();
 
-        // Aggiungi nuova moto solo quando si preme il pulsante
         document.getElementById('addMotoBtn').addEventListener('click', function () {
             var totalForms = document.getElementById('id_form-TOTAL_FORMS');
             var currentCount = parseInt(totalForms.value);
@@ -150,9 +143,7 @@
             newMotoFormDiv.innerHTML = emptyFormHtml;
             newMotoFormDiv.style.display = 'block';
             totalForms.value = currentCount + 1;
-            // Disabilita il pulsante finché il form non viene salvato o eliminato
             this.disabled = true;
-            // Gestione elimina del nuovo form
             var newDeleteBtn = newMotoFormDiv.querySelector('.delete-moto-btn');
             if (newDeleteBtn) {
                 newDeleteBtn.addEventListener('click', function () {
@@ -172,7 +163,6 @@
             }
         }
 
-        // Script per rimuovere il div del checkbox DELETE se presente
         function removeDeleteCheckboxDiv() {
             var deleteDiv = document.getElementById('div_id_form-0-DELETE');
             if (deleteDiv) {
@@ -219,7 +209,6 @@
                 <i class="bi bi-trash"></i> Elimina
             </button>
         </div>
-        <!-- Nascondi sempre il checkbox DELETE come hidden -->
         <input type="checkbox" name="form-__prefix__-DELETE" id="id_form-__prefix__-DELETE" style="display:none;">
     </div>
 </script>
