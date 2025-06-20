@@ -3,34 +3,37 @@
 
 {% block CustomStyle %}
     .hero-bg {
-    background: linear-gradient(rgba(30,30,30,0.7), rgba(30,30,30,0.7)), url("
-    {% static 'images/DefaultImageEvent.jpg' %}") center/cover no-repeat;
-    min-height: 350px;
-    border-radius: 1rem;
+        background: linear-gradient(rgba(30,30,30,0.7), rgba(30,30,30,0.7)), url("{% static 'images/DefaultImageEvent.jpg' %}") center / cover no-repeat;
+        min-height: 350px;
+        border-radius: 1rem;
     }
+
     .event-card-home {
-    background: rgba(44,44,44,0.95);
-    border-radius: 1rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
-    transition: transform 0.2s;
+        background: rgba(44,44,44,0.95);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
+        transition: transform 0.2s;
     }
+
     .event-card-home:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 1rem 2rem rgba(0,0,0,0.4);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 1rem 2rem rgba(0,0,0,0.4);
     }
+
     .event-badge {
-    font-size: 0.95rem;
-    margin-right: 0.5rem;
+        font-size: 0.95rem;
+        margin-right: 0.5rem;
     }
+
     .bg-popular-dark {
-    background: linear-gradient(135deg, #181a1b 60%, #23272b 100%);
-    color: #fff;
+        background: linear-gradient(135deg, #181a1b 60%, #23272b 100%);
+        color: #fff;
     }
 {% endblock %}
 
 {% block main %}
     <section
-            class="hero-bg text-center text-white py-5 mb-5 d-flex flex-column justify-content-center align-items-center">
+            class="hero-bg text-center text-white py-5 d-flex flex-column justify-content-center align-items-center">
         <h1 class="display-4 fw-bold mb-3">Zero Gravity Events</h1>
         <p class="lead mb-4">
             La community per gli appassionati di moto e adrenalina.<br>
@@ -50,7 +53,8 @@
                 {% for event in upcoming_events %}
                     <div class="col-12 col-md-6 col-lg-4">
                         <a href="{% url 'detail' event.id %}" class="text-decoration-none">
-                            <div class="event-card-home card h-100 text-white border-0">
+                            <div class="event-card-home card h-100 border-0"
+                                 style="color:#fff; background:rgba(30,30,30,0.95);">
                                 <div class="ratio ratio-16x9">
                                     {% if event.image %}
                                         <img src="{{ event.image.url }}" class="card-img-top object-fit-cover"
@@ -64,12 +68,17 @@
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="badge bg-primary event-badge">{{ event.get_event_type_display }}</span>
                                         <span class="badge bg-success event-badge">
-                                        <i class="bi bi-people"></i> {{ event.num_participates|default:"0" }}
-                                    </span>
+                                            <i class="bi bi-people"></i>
+                                            {% if event.num_participates is not None %}
+                                                {{ event.num_participates}}
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </span>
                                     </div>
                                     <h5 class="card-title mb-1">{{ event.title }}</h5>
                                     <p class="card-text mb-1">
-                                        <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                        <i class="bi bi-calendar-event me-2"></i>{{ event.date_formatted }}
                                     </p>
                                     <p class="card-text mb-2">
                                         <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
@@ -120,12 +129,17 @@
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="badge bg-primary event-badge">{{ event.get_event_type_display }}</span>
                                         <span class="badge bg-success event-badge">
-                                        <i class="bi bi-people"></i> {{ event.num_participates|default:"0" }}
+                                        <i class="bi bi-people"></i>
+                                             {% if event.num_participates is not None %}
+                                            {{ event.num_participates}}
+                                            {% else %}
+                                                0
+                                            {% endif %}
                                     </span>
                                     </div>
                                     <h5 class="card-title mb-1">{{ event.title }}</h5>
                                     <p class="card-text mb-1">
-                                        <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                        <i class="bi bi-calendar-event me-2"></i>{{ event.date_formatted }}
                                     </p>
                                     <p class="card-text mb-2">
                                         <i class="bi bi-geo-alt me-2"></i>{{ event.location }}

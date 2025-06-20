@@ -29,7 +29,7 @@
                     <form method="post" class="form-group">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+                        <input type="hidden" name="next" value="{{ request.GET.next }}">
                         <button class="btn btn-success w-100" type="submit">
                             <i class="bi bi-box-arrow-in-right"></i> Log in
                         </button>

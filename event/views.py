@@ -56,8 +56,13 @@ def index(request):
         Event.objects.filter(date__gte=today)
         .annotate(num_participates=Sum('registrations__num_participates'))
         .filter(registration_start__lte=today, registration_end__gte=today, is_cancelled=False)
-        .order_by('-num_participates', 'date')[:3]
+        .order_by('num_participates')[:3]
     )
+
+    for event in upcoming_events:
+        event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
+    for event in popular_events:
+        event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
 
     return render(request, "event/homepage.html", {
         "upcoming_events": upcoming_events,
@@ -66,6 +71,9 @@ def index(request):
 
 def event_detail(request, id):
     event = get_object_or_404(Event, id=id)
+    event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
+    event.registration_start = event.date.strftime("%d/%m/%Y %H:%M")
+    event.registration_end = event.date.strftime("%d/%m/%Y %H:%M")
     is_participating = False
     if request.user.is_authenticated:
         participation = Participation.objects.filter(user=request.user, event=event).first()
@@ -110,6 +118,12 @@ def list_event(request):
         .annotate(num_participates=Sum('registrations__num_participates'))
         .order_by('date')
     )
+
+    for event in events:
+        event.date_formatted = event.date.strftime("%d/%m/%Y")
+    for event in events_passed:
+        event.date_formatted = event.date.strftime("%d/%m/%Y")
+
     return render(request, "event/listEvents.html", {
         "events": events,
         "events_passed": events_passed,

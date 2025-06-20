@@ -3,213 +3,215 @@
 {% block title %}Impostazioni account{% endblock %}
 
 {% block main %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-dark text-white">
-                    <h4 class="mb-0">Dati personali</h4>
-                </div>
-                <div class="card-body">
-                    {% if success %}
-                        <div class="alert alert-success">
-                            Impostazioni aggiornate con successo.
-                            <a href="{% url 'profile' user.username %}" class="alert-link">Vai al profilo</a>.
-                        </div>
-                    {% endif %}
-                    <!-- Form dati personali -->
-                    <form method="post" id="settingsForm">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Salva dati personali
-                            </button>
-                        </div>
-                    </form>
-                    <!-- Form cambio password -->
-                    <div class="card my-4">
-                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">Cambia password</h4>
-                            <button type="button" class="btn btn-primary btn-sm" id="showPasswordFormBtn">
-                                <i class="bi bi-key"></i> Cambia password
-                            </button>
-                        </div>
-                        <div class="card-body" id="passwordFormContainer" style="display: none;">
-                            <form method="post" id="passwordForm">
-                                {% csrf_token %}
-                                {{ password_form|crispy }}
-                                <div class="d-flex justify-content-end mt-3">
-                                    <button type="submit" class="btn btn-warning">
-                                        <i class="bi bi-save"></i> Aggiorna password
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0">Dati personali</h4>
                     </div>
-                    <!-- Formset gestione moto -->
-                    <div class="card my-4" id="moto-section">
-                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">Le tue moto</h4>
-                            <button type="button" class="btn btn-success btn-sm" id="addMotoBtn">
-                                <i class="bi bi-plus-circle"></i> Aggiungi moto
-                            </button>
+                    <div class="card-body">
+                        {% if success %}
+                            <div class="alert alert-success">
+                                Impostazioni aggiornate con successo.
+                                <a href="{% url 'profile' user.username %}" class="alert-link">Vai al profilo</a>.
+                            </div>
+                        {% endif %}
+                        <!-- Form dati personali -->
+                        <form method="post" id="settingsForm">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Salva dati personali
+                                </button>
+                            </div>
+                        </form>
+                        <!-- Form cambio password -->
+                        <div class="card my-4">
+                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Cambia password</h4>
+                                <button type="button" class="btn btn-primary btn-sm" id="showPasswordFormBtn">
+                                    <i class="bi bi-key"></i> Cambia password
+                                </button>
+                            </div>
+                            <div class="card-body" id="passwordFormContainer" style="display: none;">
+                                <form method="post" id="passwordForm">
+                                    {% csrf_token %}
+                                    {{ password_form|crispy }}
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="bi bi-save"></i> Aggiorna password
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            {% if success_moto %}
-                                <div class="alert alert-success" id="success-moto-alert">
-                                    Dati delle moto aggiornati con successo.
-                                </div>
-                            {% endif %}
-                            <form method="post" id="motoForm">
-                                {% csrf_token %}
-                                <input type="hidden" name="moto_submit" value="1">
-                                {{ moto_formset.management_form }}
-                                <div id="moto-list">
-                                    {% for form in moto_formset %}
-                                        <div class="border rounded p-3 mb-3 position-relative moto-form-block" data-form-index="{{ forloop.counter0 }}">
-                                            {% for field in form.visible_fields %}
-                                                {% if field.name != form.prefix|add:'-DELETE' %}
+                        <!-- Formset gestione moto -->
+                        <div class="card my-4" id="moto-section">
+                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Le tue moto</h4>
+                                <button type="button" class="btn btn-success btn-sm" id="addMotoBtn">
+                                    <i class="bi bi-plus-circle"></i> Aggiungi moto
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                {% if success_moto %}
+                                    <div class="alert alert-success" id="success-moto-alert">
+                                        Dati delle moto aggiornati con successo.
+                                    </div>
+                                {% endif %}
+                                <form method="post" id="motoForm">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="moto_submit" value="1">
+                                    {{ moto_formset.management_form }}
+                                    <div id="moto-list">
+                                        {% for form in moto_formset %}
+                                            <div class="border rounded p-3 mb-3 position-relative moto-form-block"
+                                                 data-form-index="{{ forloop.counter0 }}">
+                                                {% for field in form.visible_fields %}
                                                     {{ field|as_crispy_field }}
-                                                {% endif %}
-                                            {% endfor %}
-                                            <div class="d-flex justify-content-end mt-2">
-                                                {% if moto_formset.total_form_count > 1 %}
-                                                    <button type="button" class="btn btn-danger btn-sm delete-moto-btn">
-                                                        <i class="bi bi-trash"></i> Elimina
-                                                    </button>
-                                                {% endif %}
+                                                {% endfor %}
+                                                <div class="d-flex justify-content-end mt-2">
+                                                    {% if moto_formset.total_form_count > 1 %}
+                                                        <button type="button"
+                                                                class="btn btn-danger btn-sm delete-moto-btn">
+                                                            <i class="bi bi-trash"></i> Elimina
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                                {% for hidden in form.hidden_fields %}
+                                                    {{ hidden }}
+                                                {% endfor %}
                                             </div>
-                                            {% for hidden in form.hidden_fields %}
-                                                {{ hidden }}
-                                            {% endfor %}
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                                <div id="new-moto-form" style="display:none;">
-                                </div>
-                                <div class="d-flex justify-content-end mt-3">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-save"></i> Salva moto
-                                    </button>
-                                </div>
-                            </form>
+                                        {% endfor %}
+                                    </div>
+                                    <div id="new-moto-form" style="display:none;">
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> Salva moto
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'profile' user.username %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Annulla
-                        </a>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'profile' user.username %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Annulla
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('showPasswordFormBtn').addEventListener('click', function () {
-            document.getElementById('passwordFormContainer').style.display = 'block';
-            this.style.display = 'none';
-        });
-
-        function updateDeleteButtons() {
-            let motoBlocks = document.querySelectorAll('.moto-form-block');
-            let deleteBtns = document.querySelectorAll('.delete-moto-btn');
-            if (motoBlocks.length <= 1) {
-                deleteBtns.forEach(btn => btn.style.display = 'none');
-            } else {
-                deleteBtns.forEach(btn => btn.style.display = '');
-            }
-        }
-        document.querySelectorAll('.delete-moto-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var block = btn.closest('.moto-form-block');
-                var delInput = block.querySelector('input[type="checkbox"][name$="-DELETE"]');
-                if (delInput) {
-                    delInput.checked = true;
-                }
-                block.style.display = 'none';
-                setTimeout(updateDeleteButtons, 100);
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('showPasswordFormBtn').addEventListener('click', function () {
+                document.getElementById('passwordFormContainer').style.display = 'block';
+                this.style.display = 'none';
             });
-        });
-        updateDeleteButtons();
 
-        document.getElementById('addMotoBtn').addEventListener('click', function () {
-            var totalForms = document.getElementById('id_form-TOTAL_FORMS');
-            var currentCount = parseInt(totalForms.value);
-            var emptyFormHtml = document.getElementById('empty-form-template').innerHTML.replace(/__prefix__/g, currentCount);
-            var newMotoFormDiv = document.getElementById('new-moto-form');
-            newMotoFormDiv.innerHTML = emptyFormHtml;
-            newMotoFormDiv.style.display = 'block';
-            totalForms.value = currentCount + 1;
-            this.disabled = true;
-            var newDeleteBtn = newMotoFormDiv.querySelector('.delete-moto-btn');
-            if (newDeleteBtn) {
-                newDeleteBtn.addEventListener('click', function () {
-                    newMotoFormDiv.innerHTML = "";
-                    newMotoFormDiv.style.display = 'none';
-                    totalForms.value = Math.max(currentCount, 1);
-                    document.getElementById('addMotoBtn').disabled = false;
+            function updateDeleteButtons() {
+                let motoBlocks = document.querySelectorAll('.moto-form-block');
+                let deleteBtns = document.querySelectorAll('.delete-moto-btn');
+                if (motoBlocks.length <= 1) {
+                    deleteBtns.forEach(btn => btn.style.display = 'none');
+                } else {
+                    deleteBtns.forEach(btn => btn.style.display = '');
+                }
+            }
+
+            document.querySelectorAll('.delete-moto-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var block = btn.closest('.moto-form-block');
+                    var delInput = block.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                    if (delInput) {
+                        delInput.checked = true;
+                    }
+                    block.style.display = 'none';
+                    setTimeout(updateDeleteButtons, 100);
                 });
+            });
+            updateDeleteButtons();
+
+            document.getElementById('addMotoBtn').addEventListener('click', function () {
+                var totalForms = document.getElementById('id_form-TOTAL_FORMS');
+                var currentCount = parseInt(totalForms.value);
+                var emptyFormHtml = document.getElementById('empty-form-template').innerHTML.replace(/__prefix__/g, currentCount);
+                var newMotoFormDiv = document.getElementById('new-moto-form');
+                newMotoFormDiv.innerHTML = emptyFormHtml;
+                newMotoFormDiv.style.display = 'block';
+                totalForms.value = currentCount + 1;
+                this.disabled = true;
+                var newDeleteBtn = newMotoFormDiv.querySelector('.delete-moto-btn');
+                if (newDeleteBtn) {
+                    newDeleteBtn.addEventListener('click', function () {
+                        newMotoFormDiv.innerHTML = "";
+                        newMotoFormDiv.style.display = 'none';
+                        totalForms.value = Math.max(currentCount, 1);
+                        document.getElementById('addMotoBtn').disabled = false;
+                    });
+                }
+            });
+
+            if (document.getElementById('success-moto-alert')) {
+                var motoSection = document.getElementById('moto-section');
+                if (motoSection) {
+                    var y = motoSection.getBoundingClientRect().top + window.pageYOffset - 100;
+                    window.scrollTo({top: y, behavior: "smooth"});
+                }
             }
+
+            function removeDeleteCheckboxDiv() {
+                var deleteDiv = document.getElementById('div_id_form-0-DELETE');
+                if (deleteDiv) {
+                    deleteDiv.remove();
+                }
+            }
+
+            removeDeleteCheckboxDiv();
+            const observer = new MutationObserver(removeDeleteCheckboxDiv);
+            observer.observe(document.body, {childList: true, subtree: true});
         });
-
-        if (document.getElementById('success-moto-alert')) {
-            var motoSection = document.getElementById('moto-section');
-            if (motoSection) {
-                var y = motoSection.getBoundingClientRect().top + window.pageYOffset - 100;
-                window.scrollTo({top: y, behavior: "smooth"});
-            }
-        }
-
-        function removeDeleteCheckboxDiv() {
-            var deleteDiv = document.getElementById('div_id_form-0-DELETE');
-            if (deleteDiv) {
-                deleteDiv.remove();
-            }
-        }
-        removeDeleteCheckboxDiv();
-        const observer = new MutationObserver(removeDeleteCheckboxDiv);
-        observer.observe(document.body, { childList: true, subtree: true });
-    });
-</script>
-<!-- Template per nuovo form moto -->
-<script type="text/template" id="empty-form-template">
-    <div class="border rounded p-3 mb-3 position-relative moto-form-block">
-        <div class="mb-3">
-            <label for="id_form-__prefix__-brand" class="form-label">Marca:</label>
-            <input type="text" name="form-__prefix__-brand" maxlength="50" class="form-control"
-                   id="id_form-__prefix__-brand">
-        </div>
-        <div class="mb-3">
-            <label for="id_form-__prefix__-model" class="form-label">Modello:</label>
-            <input type="text" name="form-__prefix__-model" maxlength="50" class="form-control"
-                   id="id_form-__prefix__-model">
-        </div>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="id_form-__prefix__-year" class="form-label">Anno:</label>
-                <input type="number" name="form-__prefix__-year" class="form-control" id="id_form-__prefix__-year">
+    </script>
+    <!-- Template per nuovo form moto -->
+    <script type="text/template" id="empty-form-template">
+        <div class="border rounded p-3 mb-3 position-relative moto-form-block">
+            <div class="mb-3">
+                <label for="id_form-__prefix__-brand" class="form-label">Marca:</label>
+                <input type="text" name="form-__prefix__-brand" maxlength="50" class="form-control"
+                       id="id_form-__prefix__-brand">
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="id_form-__prefix__-displacement" class="form-label">Cilindrata:</label>
-                <input type="number" name="form-__prefix__-displacement" class="form-control"
-                       id="id_form-__prefix__-displacement">
+            <div class="mb-3">
+                <label for="id_form-__prefix__-model" class="form-label">Modello:</label>
+                <input type="text" name="form-__prefix__-model" maxlength="50" class="form-control"
+                       id="id_form-__prefix__-model">
             </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_form-__prefix__-year" class="form-label">Anno:</label>
+                    <input type="number" name="form-__prefix__-year" class="form-control" id="id_form-__prefix__-year">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_form-__prefix__-displacement" class="form-label">Cilindrata:</label>
+                    <input type="number" name="form-__prefix__-displacement" class="form-control"
+                           id="id_form-__prefix__-displacement">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="id_form-__prefix__-notes" class="form-label">Note:</label>
+                <input type="text" name="form-__prefix__-notes" maxlength="200" class="form-control"
+                       id="id_form-__prefix__-notes">
+            </div>
+            <div class="d-flex justify-content-end mt-2">
+                <button type="button" class="btn btn-danger btn-sm delete-moto-btn"
+                        onclick="this.closest('.moto-form-block').remove();document.getElementById('addMotoBtn').disabled=false;document.getElementById('new-moto-form').innerHTML='';document.getElementById('new-moto-form').style.display='none';">
+                    <i class="bi bi-trash"></i> Elimina
+                </button>
+            </div>
+            <input type="checkbox" name="form-__prefix__-DELETE" id="id_form-__prefix__-DELETE" style="display:none;">
         </div>
-        <div class="mb-3">
-            <label for="id_form-__prefix__-notes" class="form-label">Note:</label>
-            <input type="text" name="form-__prefix__-notes" maxlength="200" class="form-control"
-                   id="id_form-__prefix__-notes">
-        </div>
-        <div class="d-flex justify-content-end mt-2">
-            <button type="button" class="btn btn-danger btn-sm delete-moto-btn"
-                    onclick="this.closest('.moto-form-block').remove();document.getElementById('addMotoBtn').disabled=false;document.getElementById('new-moto-form').innerHTML='';document.getElementById('new-moto-form').style.display='none';">
-                <i class="bi bi-trash"></i> Elimina
-            </button>
-        </div>
-        <input type="checkbox" name="form-__prefix__-DELETE" id="id_form-__prefix__-DELETE" style="display:none;">
-    </div>
-</script>
+    </script>
 {% endblock %}

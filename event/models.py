@@ -7,7 +7,6 @@ from django.db.models import JSONField
 class Event(models.Model):
     EVENT_TYPE_CHOICES = [
         ('statico', 'Motoraduni statici'),
-        ('itinerante', 'Motoraduni itineranti'),
         ('motogiro', 'Motogiri'),
         ('enogastronomico', 'Moto Tour Enogastronomici'),
         ('trackday', 'Trackday'),

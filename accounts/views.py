@@ -63,6 +63,10 @@ class DashboardView(TemplateView):
         organized_events = []
         if is_organizer:
             organized_events = Event.objects.filter(organizer=user)
+        for event in events:
+            event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
+        for event in organized_events:
+            event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
         context.update({
             "events": events,
             "is_organizer": is_organizer,

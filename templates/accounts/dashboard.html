@@ -31,7 +31,7 @@
                                 {% endif %}
                                 <div class="card-body">
                                     <h5 class="card-title">{{ event.title }}</h5>
-                                    <p class="card-text">Data: {{ event.date|date:"d/m/Y H:i" }}</p>
+                                    <p class="card-text">Data: {{ event.date_formatted }}</p>
                                     <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
                                     <a href="{% url 'detail' event.id %}" class="btn btn-primary btn-sm me-2">Dettagli</a>
                                     <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm">Gestisci</a>
@@ -63,7 +63,7 @@
                                 {% endif %}
                                 <div class="card-body">
                                     <h5 class="card-title">{{ event.title }}</h5>
-                                    <p class="card-text">Data: {{ event.date|date:"d/m/Y H:i" }}</p>
+                                    <p class="card-text">Data: {{ event.date_formatted }}</p>
                                     <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
                                     <a href="{% url 'detail' event.id %}"
                                        class="btn btn-primary btn-sm me-2">Dettagli</a>

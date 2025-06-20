@@ -122,11 +122,14 @@
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4" id="futureEvents">
             {% for event in events %}
                 <div class="col event-card" data-category="{{ event.event_type }}"
-                     data-date="{{ event.date|date:'Y-m-d' }}"
+                     data-date="{{ event.date_formatted_short }}"
                      data-status="{{ event.status }}"
                      data-title="{{ event.title|lower }}"
                      data-location="{{ event.location|lower }}"
-                     data-partecipanti="{{ event.num_participates }}">
+                     data-partecipanti="
+                                        {% if event.num_participates is not None %}
+                                            {{ event.num_participates }}
+                                        {% else %} 0 {% endif %}">
                     <div class="card h-100 bg-dark text-white border-secondary shadow-sm">
                         <div class="ratio ratio-4x3">
                             {% if event.image %}
@@ -146,13 +149,18 @@
                                 </div>
                                 <div class="mb-2">
                                     <p class="card-text">
-                                        <i class="bi bi-person-circle fs-5"></i> {{ event.num_participates }}
+                                        <i class="bi bi-person-circle fs-5"></i>
+                                        {% if event.num_participates is not None %}
+                                            {{ event.num_participates }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
                                     </p>
                                 </div>
                             </div>
                             <h5 class="card-title">{{ event.title }}</h5>
                             <p class="card-text mb-1">
-                                <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                <i class="bi bi-calendar-event me-2"></i>{{ event.date_formatted }}
                             </p>
                             <p class="card-text mb-2">
                                 {% if event.location_link %}
@@ -197,7 +205,7 @@
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 d-none" id="pastEvents">
                 {% for event in events_passed %}
                     <div class="col event-card-past" data-category="{{ event.event_type }}"
-                         data-date="{{ event.date|date:'Y-m-d' }}">
+                         data-date="{{ event.date_formatted_short }}">
                         <div class="card h-100 bg-dark text-muted border-secondary shadow-sm">
                             <div class="ratio ratio-4x3">
                                 {% if event.image %}
@@ -216,7 +224,7 @@
                                 </div>
                                 <h5 class="card-title text-decoration-line-through opacity-50 text-white">{{ event.title }}</h5>
                                 <p class="card-text mb-1 text-white-50">
-                                    <i class="bi bi-calendar-event me-2"></i>{{ event.date|date:"d/m/Y H:i" }}
+                                    <i class="bi bi-calendar-event me-2"></i>{{ event.date_formatted }}
                                 </p>
                                 <p class="card-text mb-2 text-white-50">
                                     <i class="bi bi-geo-alt me-2"></i>{{ event.location }}
