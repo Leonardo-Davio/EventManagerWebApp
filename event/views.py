@@ -21,6 +21,33 @@ class EventForm(forms.ModelForm):
             'registration_end': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        registration_start = cleaned_data.get('registration_start')
+        registration_end = cleaned_data.get('registration_end')
+        now = timezone.now()
+
+        # L'evento deve essere almeno domani
+        if date:
+            tomorrow = (now + timezone.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+            if date < tomorrow:
+                self.add_error('date', "La data dell'evento deve essere almeno domani.")
+
+        # Le iscrizioni si possono aprire al minimo al giorno stesso e all'orario corrente
+        if registration_start:
+            if registration_start < now:
+                self.add_error('registration_start', "Le iscrizioni possono aprirsi solo da ora in poi.")
+
+        # Le iscrizioni non si possono chiudere dopo l'inizio evento o prima dell'apertura iscrizioni
+        if registration_end and registration_start and date:
+            if registration_end > date:
+                self.add_error('registration_end', "La chiusura iscrizioni non può essere dopo l'inizio dell'evento.")
+            if registration_end < registration_start:
+                self.add_error('registration_end', "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
+
+        return cleaned_data
+
 def index(request):
     today = timezone.now()
     # Eventi futuri ordinati per data (i 3 più vicini)
@@ -142,7 +169,12 @@ def new_event(request):
                     event.save()
                     return redirect('detail', id=event.id)
             else:
-                form = EventForm()
+                # Imposta la data di default a domani alle 9:00
+                from django.utils import timezone
+                import datetime
+                now = timezone.now()
+                tomorrow_9 = (now + timezone.timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+                form = EventForm(initial={'date': tomorrow_9.strftime('%Y-%m-%dT%H:%M')})
             return render(request, "event/newEvent.html", {"form": form})
     return redirect('events')
 

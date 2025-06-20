@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login
 from django.contrib import messages
+from django.views import View
 
 from django.contrib.auth import get_user_model
 
@@ -194,8 +195,13 @@ class ProfileView(DetailView):
                 user_profile.groups.remove(organizer_group)
         return self.get(request, *args, **kwargs)
 
-def fake_password_reset_confirm(request):
-    if request.method == "POST":
+class FakePasswordResetConfirmView(View):
+    template_name = 'accounts/recoveryPassword/passwordResetConfirm.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
         new_password = request.POST.get("new_password")
         confirm_password = request.POST.get("confirm_password")
         email = request.session.get('reset_email')
@@ -211,7 +217,6 @@ def fake_password_reset_confirm(request):
         else:
             try:
                 user = User.objects.get(email=email, username=username)
-                # Controllo base sui parametri della password (puoi aggiungere altre regole se vuoi)
                 if len(new_password) < 8:
                     messages.error(request, "La password deve contenere almeno 8 caratteri.")
                 elif new_password.isdigit() or new_password.isalpha():
@@ -219,7 +224,6 @@ def fake_password_reset_confirm(request):
                 else:
                     user.set_password(new_password)
                     user.save()
-                    # Pulisci la sessione
                     del request.session['reset_email']
                     del request.session['reset_username']
                     messages.success(request, "Password aggiornata con successo. Ora puoi accedere.")
@@ -227,33 +231,40 @@ def fake_password_reset_confirm(request):
             except User.DoesNotExist:
                 messages.error(request, "Utente non trovato. Ripeti la procedura.")
                 return redirect('password_reset')
-    return render(request, 'accounts/recoveryPassword/passwordResetConfirm.html')
+        return render(request, self.template_name)
 
-def fake_password_reset(request):
-    if request.method == "POST":
+class FakePasswordResetView(View):
+    template_name = 'accounts/recoveryPassword/passwordReset.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {'form': None})
+
+    def post(self, request, *args, **kwargs):
         email = request.POST.get("email")
         username = request.POST.get("username")
         User = get_user_model()
         if not email or not username:
             messages.error(request, "Inserisci sia username che email.")
-            return render(request, 'accounts/recoveryPassword/passwordReset.html', {'form': None})
+            return render(request, self.template_name, {'form': None})
         try:
             user = User.objects.get(email=email, username=username)
-            # Dati validi: salva conferma e dati in sessione
             request.session['reset_confirmed'] = True
             request.session['reset_email'] = email
             request.session['reset_username'] = username
         except User.DoesNotExist:
             request.session['reset_confirmed'] = False
         return redirect('password_reset_done')
-    else:
-        return render(request, 'accounts/recoveryPassword/passwordReset.html', {'form': None})
 
-def fake_password_reset_done(request):
-    # Se la conferma è in sessione e True, redirect a confirm
-    if request.session.pop('reset_confirmed', False):
-        return redirect('password_reset_confirm_fake')
-    return render(request, 'accounts/recoveryPassword/passwordResetDone.html')
+class FakePasswordResetDoneView(View):
+    template_name = 'accounts/recoveryPassword/passwordResetDone.html'
 
-def fake_password_reset_complete(request):
-    return render(request, 'accounts/recoveryPassword/passwordResetComlete.html')
+    def get(self, request, *args, **kwargs):
+        if request.session.pop('reset_confirmed', False):
+            return redirect('password_reset_confirm_fake')
+        return render(request, self.template_name)
+
+class FakePasswordResetCompleteView(View):
+    template_name = 'accounts/recoveryPassword/passwordResetComlete.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)

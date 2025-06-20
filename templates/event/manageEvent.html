@@ -15,6 +15,9 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <div id="registration_start_wrapper">
+                            <!-- Il campo verrà spostato qui via JS -->
+                        </div>
                         {{ form|crispy }}
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'detail' event.id %}" class="btn btn-secondary">
@@ -32,36 +35,172 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function roundMinutes(value) {
-        if (!value) return value;
-        let [date, time] = value.split('T');
-        if (!time) return value;
-        let [hh, mm] = time.split(':');
-        mm = parseInt(mm, 10);
-        let rounded = 0;
-        if (mm < 8) rounded = 0;
-        else if (mm < 23) rounded = 15;
-        else if (mm < 38) rounded = 30;
-        else if (mm < 53) rounded = 45;
-        else {
-            rounded = 0;
-            hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+    // Funzione per arrotondare per eccesso al prossimo quarto d'ora
+    function ceilToNextQuarter(dt) {
+        let minutes = dt.getMinutes();
+        let add = 0;
+        if (minutes % 15 !== 0) {
+            add = 15 - (minutes % 15);
         }
-        return `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+        dt.setMinutes(minutes + add, 0, 0);
+        return dt;
     }
 
-    function enforceMinuteStep(e) {
-        const input = e.target;
-        const newValue = roundMinutes(input.value);
-        if (input.value !== newValue) {
-            input.value = newValue;
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    function toDatetimeLocal(dt) {
+        return dt.getFullYear() + '-' +
+            pad(dt.getMonth() + 1) + '-' +
+            pad(dt.getDate()) + 'T' +
+            pad(dt.getHours()) + ':' +
+            pad(dt.getMinutes());
+    }
+    // Evento: almeno domani
+    const eventDateInput = document.querySelector('input[name="date"]');
+    if (eventDateInput) {
+        let tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0,0,0,0);
+        eventDateInput.setAttribute('min', toDatetimeLocal(tomorrow));
+    }
+    // Iscrizioni: apertura almeno ora arrotondata al prossimo quarto d'ora
+    const regStartInput = document.querySelector('input[name="registration_start"]');
+    if (regStartInput) {
+        let nextQuarter = ceilToNextQuarter(new Date());
+        regStartInput.setAttribute('min', toDatetimeLocal(nextQuarter));
+        // Se il campo è vuoto, imposta anche il valore di default
+        if (!regStartInput.value) {
+            regStartInput.value = toDatetimeLocal(nextQuarter);
         }
     }
+    // Iscrizioni: chiusura almeno ora
+    const regEndInput = document.querySelector('input[name="registration_end"]');
+    if (regEndInput) {
+        regEndInput.setAttribute('min', toDatetimeLocal(now));
+    }
 
+    // Forza il menu dei datetime-local a mostrare solo ore e quarti d'ora
     document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        input.addEventListener('change', enforceMinuteStep);
-        input.addEventListener('blur', enforceMinuteStep);
+        input.setAttribute('step', '900'); // 900 secondi = 15 minuti
+
+        // Mostra un avviso quando si apre il menu popup del campo datetime-local
+        // Avviso all'apertura del popup (focus)
+        input.addEventListener('focus', function(e) {
+            let tooltip = document.createElement('div');
+            tooltip.textContent = "Seleziona solo minuti 00, 15, 30 o 45";
+            tooltip.style.position = "absolute";
+            tooltip.style.background = "#ffc107";
+            tooltip.style.color = "#222";
+            tooltip.style.padding = "4px 10px";
+            tooltip.style.borderRadius = "4px";
+            tooltip.style.fontSize = "0.9em";
+            tooltip.style.zIndex = 1000;
+            let rect = input.getBoundingClientRect();
+            tooltip.style.left = (rect.left + window.scrollX) + "px";
+            tooltip.style.top = (rect.top + window.scrollY - 32) + "px";
+            tooltip.className = "datetime-tooltip";
+            document.body.appendChild(tooltip);
+            setTimeout(() => {
+                if (tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+            }, 2000);
+        });
+
+        // Arrotonda sempre al quarto d'ora più vicino quando l'utente cambia o esce dal campo
+        function roundToQuarter(e) {
+            let value = e.target.value;
+            if (!value) return;
+            let [date, time] = value.split('T');
+            if (!time) return;
+            let [hh, mm] = time.split(':');
+            mm = parseInt(mm, 10);
+            let rounded = 0;
+            if (mm < 8) rounded = 0;
+            else if (mm < 23) rounded = 15;
+            else if (mm < 38) rounded = 30;
+            else if (mm < 53) rounded = 45;
+            else {
+                rounded = 0;
+                hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+            }
+            e.target.value = `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+        }
+        input.addEventListener('change', roundToQuarter);
+        input.addEventListener('blur', roundToQuarter);
     });
+
+    // Sposta il campo registration_start e aggiungi il pulsante "Ora corrente"
+    const regStartInput2 = document.querySelector('input[name="registration_start"]');
+    if (regStartInput2) {
+        const wrapper = document.getElementById('registration_start_wrapper');
+        if (wrapper) {
+            let label = document.querySelector('label[for="' + regStartInput2.id + '"]');
+            if (label) {
+                wrapper.appendChild(label);
+            }
+            wrapper.appendChild(regStartInput2);
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline-primary btn-sm ms-2 mb-2';
+            btn.textContent = 'Ora corrente';
+            btn.onclick = function() {
+                const now = new Date();
+                const pad = n => n.toString().padStart(2, '0');
+                function toDatetimeLocal(dt) {
+                    return dt.getFullYear() + '-' +
+                        pad(dt.getMonth() + 1) + '-' +
+                        pad(dt.getDate()) + 'T' +
+                        pad(dt.getHours()) + ':' +
+                        pad(dt.getMinutes());
+                }
+                regStartInput2.value = toDatetimeLocal(now);
+                regStartInput2.dispatchEvent(new Event('change'));
+            };
+            wrapper.appendChild(btn);
+
+            // Sposta eventuali helptext o errori
+            let help = regStartInput2.nextElementSibling;
+            while (help && (help.classList.contains('help-block') || help.classList.contains('invalid-feedback'))) {
+                wrapper.appendChild(help);
+                help = regStartInput2.nextElementSibling;
+            }
+        }
+    }
+
+    // Uniforma lo stile dei messaggi informativi
+    // Data evento
+    const eventDateInput = document.querySelector('input[name="date"]');
+    if (eventDateInput) {
+        // Rimuovi eventuali vecchi avvisi
+        let next = eventDateInput.nextElementSibling;
+        while (next && next.classList.contains('form-text')) {
+            let toRemove = next;
+            next = next.nextElementSibling;
+            toRemove.remove();
+        }
+        // Messaggio con stile uniforme
+        const info = document.createElement('div');
+        info.className = 'form-text text-muted mb-2';
+        info.textContent = "La data dell'evento deve essere almeno domani alle ore 9:00.";
+        eventDateInput.parentNode.insertBefore(info, eventDateInput.nextSibling);
+    }
+
+    // Inizio iscrizioni
+    const regStartInput = document.querySelector('input[name="registration_start"]');
+    if (regStartInput) {
+        // Rimuovi eventuali vecchi avvisi
+        let next = regStartInput.nextElementSibling;
+        while (next && next.classList.contains('form-text')) {
+            let toRemove = next;
+            next = next.nextElementSibling;
+            toRemove.remove();
+        }
+        // Messaggio con stile uniforme
+        const notice = document.createElement('div');
+        notice.className = 'form-text text-muted mb-2';
+        notice.textContent = "L'orario verrà arrotondato automaticamente al quarto d'ora successivo (00, 15, 30, 45).";
+        regStartInput.parentNode.insertBefore(notice, regStartInput.nextSibling);
+    }
 });
 </script>
 {% endblock %}

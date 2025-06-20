@@ -16,6 +16,7 @@
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form|crispy }}
+                        <div id="reg_start_notice"></div>
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'index' %}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Annulla
@@ -32,45 +33,110 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Forza step e range per input datetime-local (15 min, 24h)
-    document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        input.setAttribute('step', '900');
-        input.setAttribute('min', '0000-01-01T00:00');
-        input.setAttribute('max', '9999-12-31T23:59');
-    });
-
-    function roundMinutes(value) {
-        if (!value) return value;
-        // value formato: "YYYY-MM-DDTHH:MM"
-        let [date, time] = value.split('T');
-        if (!time) return value;
-        let [hh, mm] = time.split(':');
-        mm = parseInt(mm, 10);
-        let rounded = 0;
-        if (mm < 8) rounded = 0;
-        else if (mm < 23) rounded = 15;
-        else if (mm < 38) rounded = 30;
-        else if (mm < 53) rounded = 45;
-        else {
-            rounded = 0;
-            hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+    // Funzione per arrotondare per eccesso al prossimo quarto d'ora
+    function ceilToNextQuarter(dt) {
+        let minutes = dt.getMinutes();
+        let add = 0;
+        if (minutes % 15 !== 0) {
+            add = 15 - (minutes % 15);
         }
-        return `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+        dt.setMinutes(minutes + add, 0, 0);
+        return dt;
     }
 
-    function enforceMinuteStep(e) {
-        const input = e.target;
-        const newValue = roundMinutes(input.value);
-        if (input.value !== newValue) {
-            input.value = newValue;
-        }
+    const now = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    function toDatetimeLocal(dt) {
+        return dt.getFullYear() + '-' +
+            pad(dt.getMonth() + 1) + '-' +
+            pad(dt.getDate()) + 'T' +
+            pad(dt.getHours()) + ':' +
+            pad(dt.getMinutes());
     }
 
-    // Applica a tutti i campi datetime-local
+    // Evento: almeno domani alle 9:00
+    const eventDateInput = document.querySelector('input[name="date"]');
+    if (eventDateInput) {
+        let tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9,0,0,0);
+        eventDateInput.setAttribute('min', toDatetimeLocal(tomorrow));
+        if (!eventDateInput.value) {
+            eventDateInput.value = toDatetimeLocal(tomorrow);
+        }
+        // Messaggio con stile uniforme
+        const info = document.createElement('div');
+        info.className = 'form-text text-muted mb-2';
+        info.textContent = "La data dell'evento deve essere almeno domani alle ore 9:00.";
+        eventDateInput.parentNode.insertBefore(info, eventDateInput.nextSibling);
+    }
+
+    // Iscrizioni: apertura almeno ora arrotondata al prossimo quarto d'ora
+    const regStartInput = document.querySelector('input[name="registration_start"]');
+    if (regStartInput) {
+        let nextQuarter = ceilToNextQuarter(new Date());
+        regStartInput.setAttribute('min', toDatetimeLocal(nextQuarter));
+        // Se il campo è vuoto, imposta anche il valore di default
+        if (!regStartInput.value) {
+            regStartInput.value = toDatetimeLocal(nextQuarter);
+        }
+        // Messaggio con stile uniforme
+        const notice = document.createElement('div');
+        notice.className = 'form-text text-muted mb-2';
+        notice.textContent = "L'orario verrà arrotondato automaticamente al quarto d'ora successivo (00, 15, 30, 45).";
+        // Inserisci subito dopo il campo
+        regStartInput.parentNode.insertBefore(notice, regStartInput.nextSibling);
+    }
+
+    // Iscrizioni: chiusura almeno ora
+    const regEndInput = document.querySelector('input[name="registration_end"]');
+    if (regEndInput) {
+        regEndInput.setAttribute('min', toDatetimeLocal(now));
+    }
+
+    // Forza il menu dei datetime-local a mostrare solo ore e quarti d'ora
     document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
-        input.addEventListener('change', enforceMinuteStep);
-        input.addEventListener('blur', enforceMinuteStep);
+        input.setAttribute('step', '900'); // 900 secondi = 15 minuti
+
+        // Arrotonda sempre al quarto d'ora più vicino quando l'utente cambia o esce dal campo
+        input.addEventListener('change', function(e) {
+            let value = e.target.value;
+            if (!value) return;
+            let [date, time] = value.split('T');
+            if (!time) return;
+            let [hh, mm] = time.split(':');
+            mm = parseInt(mm, 10);
+            let rounded = 0;
+            if (mm < 8) rounded = 0;
+            else if (mm < 23) rounded = 15;
+            else if (mm < 38) rounded = 30;
+            else if (mm < 53) rounded = 45;
+            else {
+                rounded = 0;
+                hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+            }
+            e.target.value = `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+        });
+        input.addEventListener('blur', function(e) {
+            let value = e.target.value;
+            if (!value) return;
+            let [date, time] = value.split('T');
+            if (!time) return;
+            let [hh, mm] = time.split(':');
+            mm = parseInt(mm, 10);
+            let rounded = 0;
+            if (mm < 8) rounded = 0;
+            else if (mm < 23) rounded = 15;
+            else if (mm < 38) rounded = 30;
+            else if (mm < 53) rounded = 45;
+            else {
+                rounded = 0;
+                hh = (parseInt(hh, 10) + 1).toString().padStart(2, '0');
+            }
+            e.target.value = `${date}T${hh}:${rounded.toString().padStart(2, '0')}`;
+        });
     });
+
 });
 </script>
 {% endblock %}
