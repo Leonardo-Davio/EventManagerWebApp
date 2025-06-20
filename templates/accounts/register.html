@@ -2,7 +2,7 @@
 {% load crispy_forms_filters %}
 {% load crispy_forms_tags %}
 
-{% block title %}Create an Account{% endblock %}
+{% block title %}Crea un Account{% endblock %}
 
 {% block menu %}
     <div class="col d-flex">
@@ -18,25 +18,100 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container my-5">
-        <div class="mx-auto bg-secondary text-black p-4 rounded-5" style="max-width: 700px;">
-            <form method="POST" class="form-group">
-                {% csrf_token %}
-                {{ form|crispy }}
-                <h5 class="mt-4">Le tue moto</h5>
-                {{ motorcycle_formset.management_form }}
-                {% for moto_form in motorcycle_formset %}
-                    <div class="border rounded p-2 mb-2 bg-light">
-                        {{ moto_form|crispy }}
-                        {% if moto_form.instance.pk %}
-                            <label>Elimina: {{ moto_form.DELETE }}</label>
-                        {% endif %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h4 class="mb-0">Crea un nuovo account</h4>
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-success">
-                    Registrati
-                </button>
-            </form>
+                    <div class="card-body">
+                        <form method="POST" class="form-group">
+                            {% csrf_token %}
+                            {# Alert errori generali form utente #}
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <div>
+                                        {{ form.non_field_errors }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {# Errori per ogni campo utente #}
+                            {% for field in form %}
+                                {% if field.errors %}
+                                    <div class="alert alert-danger py-1 px-2 mb-2 d-flex align-items-center" role="alert">
+                                        <i class="bi bi-exclamation-circle me-2"></i>
+                                        <div>
+                                            <strong>{{ field.label }}:</strong> {{ field.errors|striptags }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            {{ form|crispy }}
+
+                            <hr class="my-4">
+
+                            <div class="mb-3">
+                                <div class="card-title">
+                                    <h4 class="mb-3">Aggiungi la tua moto</h4>
+                                </div>
+                                {# Alert errori generali formset moto #}
+                                {% if motorcycle_formset.non_form_errors %}
+                                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        <div>
+                                            {{ motorcycle_formset.non_form_errors }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {{ motorcycle_formset.management_form }}
+                                {% for moto_form in motorcycle_formset %}
+                                    {# Errori del singolo form moto #}
+                                    {% for field in moto_form %}
+                                        {% if field.errors %}
+                                            <div class="alert alert-danger py-1 px-2 mb-2 d-flex align-items-center" role="alert">
+                                                <i class="bi bi-exclamation-circle me-2"></i>
+                                                <div>
+                                                    <strong>{{ field.label }}:</strong> {{ field.errors|striptags }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if moto_form.non_field_errors %}
+                                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                            <div>
+                                                {{ moto_form.non_field_errors }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    <div class="rounded mb-3 moto-form-block">
+                                        {% for field in moto_form.visible_fields %}
+                                            {{ field|as_crispy_field }}
+                                        {% endfor %}
+                                        {% for hidden in moto_form.hidden_fields %}
+                                            {{ hidden }}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="row">
+                                <div class="col-6 d-flex justify-content-start mt-4">
+                                    <a href="{% url 'index' %}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left"></i> Annulla
+                                    </a>
+                                </div>
+                                <div class="col-6 d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-person-plus"></i> Registrati
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

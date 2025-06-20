@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, FormView
 from django.views.generic import TemplateView, DetailView
 from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from django.utils.decorators import method_decorator
+from django.contrib.auth import login
 
 from event.models import Participation, Event
-from .forms import RegistrationForm, CustomPasswordChangeForm, UserUpdateForm, MotorcycleUpdateForm, MotorcycleFormSet
+from .forms import RegistrationForm, CustomPasswordChangeForm, UserUpdateForm, MotorcycleFormSetNew, MotorcycleFormSet
 from .models import Motorcycle, User
 
 # Create your views here.
@@ -19,12 +20,12 @@ class RegisterView(CreateView):
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
-        motorcycle_formset = MotorcycleFormSet(queryset=Motorcycle.objects.none())
+        motorcycle_formset = MotorcycleFormSetNew(queryset=Motorcycle.objects.none())
         return render(request, self.template_name, {'form': form, 'motorcycle_formset': motorcycle_formset})
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
-        motorcycle_formset = MotorcycleFormSet(request.POST, queryset=Motorcycle.objects.none())
+        motorcycle_formset = MotorcycleFormSetNew(request.POST, queryset=Motorcycle.objects.none())
         if form.is_valid() and motorcycle_formset.is_valid():
             user = form.save(commit=False)
             user.email = form.cleaned_data.get('email')
@@ -39,6 +40,7 @@ class RegisterView(CreateView):
                     moto = moto_form.save(commit=False)
                     moto.owner = user
                     moto.save()
+            login(request, user)
             return redirect(self.success_url)
         return render(request, self.template_name, {'form': form, 'motorcycle_formset': motorcycle_formset})
 
