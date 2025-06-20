@@ -40,6 +40,33 @@
     color: #00BCD4;
     font-weight: 600;
     }
+    /* Stile lista partecipanti */
+    .participants-card {
+        background: rgba(44,44,44,0.95);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+    .participants-header {
+        background: #0d6efd;
+        color: #fff;
+        border-radius: 1rem 1rem 0 0;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 0.75rem 1.25rem;
+    }
+    .participants-list .list-group-item {
+        background: transparent;
+        color: #fff;
+        border: none;
+        border-bottom: 1px solid #222;
+    }
+    .participants-list .list-group-item:last-child {
+        border-bottom: none;
+    }
+    .participants-list .badge {
+        font-size: 0.95em;
+    }
 {% endblock %}
 
 {% block main %}
@@ -169,6 +196,39 @@
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         Questo evento è stato annullato dall'organizzatore.
                     </div>
+                {% endif %}
+
+                {% if is_organizer %}
+                <!-- Lista partecipanti per l'organizzatore, stile uniforme -->
+                <div class="participants-card mt-4">
+                    <div class="participants-header">
+                        <i class="bi bi-people"></i> Lista partecipanti
+                    </div>
+                    <ul class="list-group participants-list list-group-flush">
+                        {% if participants %}
+                            {% for p in participants %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="{% url 'profile' p.user.username %}" class="text-decoration-none text-info">
+                                            {{ p.user.get_full_name|default:p.user.username }}
+                                        </a>
+                                        {% if p.motorcycle %}
+                                            <span class="ms-2 text-light small">
+                                                <i class="bi bi-bicycle"></i>
+                                                {{ p.motorcycle.brand }} {{ p.motorcycle.model }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-secondary">
+                                        {{ p.num_participates }} persona{{ p.num_participates|pluralize:"e" }}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-muted">Nessun partecipante ancora.</li>
+                        {% endif %}
+                    </ul>
+                </div>
                 {% endif %}
             </div>
         </div>

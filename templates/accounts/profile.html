@@ -12,7 +12,15 @@
                 <div class="card-body">
                     <dl class="row">
                         <dt class="col-sm-4">Username</dt>
-                        <dd class="col-sm-8">{{ user_profile.username }}</dd>
+                        <dd class="col-sm-8">
+                            {{ user_profile.username }}
+                            {% if is_owner_user %}
+                                <span class="badge bg-danger ms-2">Owner</span>
+                            {% endif %}
+                            {% if is_profile_organizer %}
+                                <span class="badge bg-success ms-2">Organizzatore</span>
+                            {% endif %}
+                        </dd>
 
                         <dt class="col-sm-4">Nome</dt>
                         <dd class="col-sm-8">{{ user_profile.first_name }}</dd>
@@ -30,6 +38,23 @@
                         <a href="{% url 'settings' %}" class="btn btn-primary mt-3">
                             <i class="bi bi-gear"></i> Modifica profilo
                         </a>
+                    {% endif %}
+                    {% if is_organizer and not is_owner and not is_profile_organizer %}
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="add_organizer" class="btn btn-warning mt-3">
+                                <i class="bi bi-person-plus"></i> Rendi organizzatore
+                            </button>
+                        </form>
+                    {% elif is_organizer and not is_owner and is_profile_organizer %}
+                        {% if not is_owner_user %}
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="remove_organizer" class="btn btn-danger mt-3">
+                                    <i class="bi bi-person-dash"></i> Rimuovi organizzatore
+                                </button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -58,4 +83,3 @@
     </div>
 </div>
 {% endblock %}
-

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Event, Participation
-from django.db.models import Count, Sum
+from django.db.models import Sum
 from django import forms
 from .forms import ParticipationForm, ParticipationUpdateForm
 
@@ -59,6 +59,12 @@ def event_detail(request, id):
         form = None
     num_participates = Participation.objects.filter(event=event).aggregate(Sum('num_participates'))[
                            'num_participates__sum'] or 0
+
+    # Aggiungi la lista dei partecipanti se l'utente è organizzatore
+    participants = []
+    if is_organizer:
+        participants = Participation.objects.filter(event=event).select_related('user')
+
     return render(
         request,
         "event/event.html",
@@ -68,6 +74,7 @@ def event_detail(request, id):
             "num_participates": num_participates,
             "is_organizer": is_organizer,
             "form": form,
+            "participants": participants,  # aggiunto
         }
     )
 

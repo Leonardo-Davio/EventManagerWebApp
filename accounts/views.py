@@ -164,11 +164,35 @@ class ProfileView(DetailView):
         user_profile = self.get_object()
         motorcycles = user_profile.motorcycles.all()
         is_owner = self.request.user.is_authenticated and self.request.user == user_profile
+        is_organizer = self.request.user.is_authenticated and self.request.user.groups.filter(name='Organizer').exists()
+        is_profile_organizer = user_profile.groups.filter(name='Organizer').exists()
+        # Usa il campo is_owner del modello
+        is_owner_user = getattr(user_profile, "is_owner", False)
         context.update({
             'motorcycles': motorcycles,
             'is_owner': is_owner,
+            'is_organizer': is_organizer,
+            'is_profile_organizer': is_profile_organizer,
+            'is_owner_user': is_owner_user,
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        # Solo organizzatori possono modificare altri utenti
+        if not (request.user.is_authenticated and request.user.groups.filter(name='Organizer').exists()):
+            return self.get(request, *args, **kwargs)
+        user_profile = self.get_object()
+        is_owner_user = getattr(user_profile, "is_owner", False)
+        organizer_group, _ = Group.objects.get_or_create(name='Organizer')
+        action = request.POST.get("action")
+        # Non permettere di togliere il ruolo all'owner
+        if action == "add_organizer":
+            if not user_profile.groups.filter(name='Organizer').exists():
+                user_profile.groups.add(organizer_group)
+        elif action == "remove_organizer" and not is_owner_user:
+            if user_profile.groups.filter(name='Organizer').exists():
+                user_profile.groups.remove(organizer_group)
+        return self.get(request, *args, **kwargs)
 
 def fake_password_reset_confirm(request):
     if request.method == "POST":
