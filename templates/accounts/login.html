@@ -1,0 +1,50 @@
+{% extends "event/base.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block menu %}
+    <div class="col d-flex">
+        <ul class="navbar-nav flex-row">
+            <li class="nav-item me-3">
+                <a class="nav-link text-white" href="{% url 'index' %}"><strong>Home</strong></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'events' %}">Eventi</a>
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block main %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Accedi</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form-group">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+                        <button class="btn btn-success w-100" type="submit">
+                            <i class="bi bi-box-arrow-in-right"></i> Log in
+                        </button>
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{% url 'password_reset' %}" class="btn btn-link p-0">
+                                <i class="bi bi-question-circle"></i> Password dimenticata?
+                            </a>
+                            <a href="{% url 'register' %}" class="btn btn-link p-0">
+                                Non hai un account? Registrati
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

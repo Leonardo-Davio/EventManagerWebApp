@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, FormView
 from django.views.generic import TemplateView, DetailView
@@ -6,17 +7,21 @@ from django.urls import reverse_lazy
 from django.contrib.auth.models import Group
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login
+from django.contrib import messages
+
+from django.contrib.auth import get_user_model
 
 from event.models import Participation, Event
 from .forms import RegistrationForm, CustomPasswordChangeForm, UserUpdateForm, MotorcycleFormSetNew, MotorcycleFormSet
 from .models import Motorcycle, User
 
 # Create your views here.
-
+class CustomLoginView(LoginView):
+    template_name = 'accounts/login.html'
 class RegisterView(CreateView):
     form_class = RegistrationForm
     template_name = 'accounts/register.html'
-    success_url = '/'  # Corretto: reindirizza alla home
+    success_url = '/'
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
@@ -164,3 +169,67 @@ class ProfileView(DetailView):
             'is_owner': is_owner,
         })
         return context
+
+def fake_password_reset_confirm(request):
+    if request.method == "POST":
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+        email = request.session.get('reset_email')
+        username = request.session.get('reset_username')
+        User = get_user_model()
+        if not new_password or not confirm_password:
+            messages.error(request, "Inserisci e conferma la nuova password.")
+        elif new_password != confirm_password:
+            messages.error(request, "Le password non coincidono.")
+        elif not email or not username:
+            messages.error(request, "Sessione scaduta. Ripeti la procedura di recupero.")
+            return redirect('password_reset')
+        else:
+            try:
+                user = User.objects.get(email=email, username=username)
+                # Controllo base sui parametri della password (puoi aggiungere altre regole se vuoi)
+                if len(new_password) < 8:
+                    messages.error(request, "La password deve contenere almeno 8 caratteri.")
+                elif new_password.isdigit() or new_password.isalpha():
+                    messages.error(request, "La password deve contenere sia lettere che numeri.")
+                else:
+                    user.set_password(new_password)
+                    user.save()
+                    # Pulisci la sessione
+                    del request.session['reset_email']
+                    del request.session['reset_username']
+                    messages.success(request, "Password aggiornata con successo. Ora puoi accedere.")
+                    return redirect('password_reset_complete_fake')
+            except User.DoesNotExist:
+                messages.error(request, "Utente non trovato. Ripeti la procedura.")
+                return redirect('password_reset')
+    return render(request, 'accounts/recoveryPassword/passwordResetConfirm.html')
+
+def fake_password_reset(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        username = request.POST.get("username")
+        User = get_user_model()
+        if not email or not username:
+            messages.error(request, "Inserisci sia username che email.")
+            return render(request, 'accounts/recoveryPassword/passwordReset.html', {'form': None})
+        try:
+            user = User.objects.get(email=email, username=username)
+            # Dati validi: salva conferma e dati in sessione
+            request.session['reset_confirmed'] = True
+            request.session['reset_email'] = email
+            request.session['reset_username'] = username
+        except User.DoesNotExist:
+            request.session['reset_confirmed'] = False
+        return redirect('password_reset_done')
+    else:
+        return render(request, 'accounts/recoveryPassword/passwordReset.html', {'form': None})
+
+def fake_password_reset_done(request):
+    # Se la conferma è in sessione e True, redirect a confirm
+    if request.session.pop('reset_confirmed', False):
+        return redirect('password_reset_confirm_fake')
+    return render(request, 'accounts/recoveryPassword/passwordResetDone.html')
+
+def fake_password_reset_complete(request):
+    return render(request, 'accounts/recoveryPassword/passwordResetComlete.html')
