@@ -3,47 +3,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Event, Participation
 from django.db.models import Sum
-from django import forms
-from .forms import ParticipationForm, ParticipationUpdateForm
+from .forms import ParticipationForm, ParticipationUpdateForm, EventForm
 from datetime import timedelta
 
 
-class EventForm(forms.ModelForm):
-    class Meta:
-        model = Event
-        fields = [
-            'title', 'description', 'date', 'location', 'location_link',
-            'maps_link', 'image', 'event_type', 'registration_start', 'registration_end'
-        ]
-        widgets = {
-            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'registration_start': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'registration_end': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        date = cleaned_data.get('date')
-        registration_start = cleaned_data.get('registration_start')
-        registration_end = cleaned_data.get('registration_end')
-        now = timezone.now()
-
-        if date:
-            tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-            if date < tomorrow:
-                self.add_error('date', "La data dell'evento deve essere almeno domani.")
-
-        if registration_start:
-            if registration_start < now:
-                self.add_error('registration_start', "Le iscrizioni possono aprirsi solo da ora in poi.")
-
-        if registration_end and registration_start and date:
-            if registration_end > date:
-                self.add_error('registration_end', "La chiusura iscrizioni non può essere dopo l'inizio dell'evento.")
-            if registration_end < registration_start:
-                self.add_error('registration_end', "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
-
-        return cleaned_data
 
 def index(request):
     today = timezone.now()
@@ -72,8 +35,8 @@ def index(request):
 def event_detail(request, id):
     event = get_object_or_404(Event, id=id)
     event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
-    event.registration_start = event.date.strftime("%d/%m/%Y %H:%M")
-    event.registration_end = event.date.strftime("%d/%m/%Y %H:%M")
+    event.registration_start_formatted = event.registration_start.strftime("%d/%m/%Y %H:%M") if event.registration_start else ""
+    event.registration_end_formatted = event.registration_end.strftime("%d/%m/%Y %H:%M") if event.registration_end else ""
     is_participating = False
     if request.user.is_authenticated:
         participation = Participation.objects.filter(user=request.user, event=event).first()
@@ -178,6 +141,14 @@ def new_event(request):
                 from django.utils import timezone
                 now = timezone.now()
                 tomorrow_9 = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+                def round_to_next_quarter(dt):
+                    minute = (dt.minute + 14) // 15 * 15
+                    if minute == 60:
+                        dt = dt.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                    else:
+                        dt = dt.replace(minute=minute, second=0, microsecond=0)
+                    return dt
+                tomorrow_9 = round_to_next_quarter(tomorrow_9)
                 form = EventForm(initial={'date': tomorrow_9.strftime('%Y-%m-%dT%H:%M')})
             return render(request, "event/newEvent.html", {"form": form})
     return redirect('events')
@@ -193,5 +164,19 @@ def manage_event(request, id):
             form.save()
             return redirect('detail', id=event.id)
     else:
-        form = EventForm(instance=event)
+        def round_to_quarter(dt):
+            minute = (dt.minute + 7) // 15 * 15
+            if minute == 60:
+                dt = dt.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+            else:
+                dt = dt.replace(minute=minute, second=0, microsecond=0)
+            return dt
+        initial = {}
+        if event.date:
+            initial['date'] = round_to_quarter(event.date).strftime('%Y-%m-%dT%H:%M')
+        if event.registration_start:
+            initial['registration_start'] = round_to_quarter(event.registration_start).strftime('%Y-%m-%dT%H:%M')
+        if event.registration_end:
+            initial['registration_end'] = round_to_quarter(event.registration_end).strftime('%Y-%m-%dT%H:%M')
+        form = EventForm(instance=event, initial=initial)
     return render(request, "event/manageEvent.html", {"form": form, "event": event})

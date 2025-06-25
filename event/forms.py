@@ -1,5 +1,5 @@
 from django import forms
-from .models import Participation
+from .models import Participation, Event
 
 class ParticipationForm(forms.ModelForm):
     accompagnato = forms.IntegerField(
@@ -50,3 +50,48 @@ class ParticipationUpdateForm(forms.ModelForm):
         widgets = {
             'motorcycle': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = [
+            'title', 'description', 'date', 'location', 'location_link',
+            'maps_link', 'image', 'event_type', 'registration_start', 'registration_end'
+        ]
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'registration_start': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'registration_end': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+    def clean(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        cleaned_data = super().clean()
+        date = cleaned_data.get('date')
+        registration_start = cleaned_data.get('registration_start')
+        registration_end = cleaned_data.get('registration_end')
+        now = timezone.now()
+
+        if date:
+            tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+            if date < tomorrow:
+                self.add_error('date', "La data dell'evento deve essere almeno domani.")
+
+        if registration_start:
+            if registration_start < now:
+                self.add_error('registration_start', "Le iscrizioni possono aprirsi solo da ora in poi.")
+            if registration_start.minute % 15 != 0:
+                self.add_error('registration_start', "I minuti devono essere 00, 15, 30 o 45.")
+
+        if registration_end:
+            if registration_end.minute % 15 != 0:
+                self.add_error('registration_end', "I minuti devono essere 00, 15, 30 o 45.")
+
+        if registration_end and registration_start and date:
+            if registration_end > date:
+                self.add_error('registration_end', "La chiusura iscrizioni non può essere dopo l'inizio dell'evento.")
+            if registration_end < registration_start:
+                self.add_error('registration_end', "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
+
+        return cleaned_data
