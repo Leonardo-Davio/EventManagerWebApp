@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5433/EventManager</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="db" uuid="258abd78-f0a8-45d7-9971-37e918444f08">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\leoda\OneDrive\Documenti\Universita\PPM-Project\EventManagerWebApp\db.sqlite3</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
