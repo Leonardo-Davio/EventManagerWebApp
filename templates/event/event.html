@@ -105,7 +105,7 @@
                                     {{ event.organizer.username }}
                                 {% endif %}
                             </a>
-                            {% if is_organizer %}
+                            {% if is_organizer and user.id == event.organizer_id %}
                                 <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm ms-2">
                                     <i class="bi bi-pencil-square"></i> Modifica
                                 </a>
@@ -160,7 +160,7 @@
                             {% endif %}
                         </div>
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'index' %}" class="btn btn-outline-primary">
+                            <a href="{% url 'events' %}" class="btn btn-outline-primary">
                                 <i class="bi bi-arrow-left"></i> Tutti gli eventi
                             </a>
                             {% if user.is_authenticated and is_participating %}
