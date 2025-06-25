@@ -52,11 +52,14 @@ class ParticipationUpdateForm(forms.ModelForm):
         }
 
 class EventForm(forms.ModelForm):
+    is_cancelled = forms.BooleanField(required=False, label="Annulla evento")
+
     class Meta:
         model = Event
         fields = [
             'title', 'description', 'date', 'location', 'location_link',
-            'maps_link', 'image', 'event_type', 'registration_start', 'registration_end'
+            'maps_link', 'image', 'event_type', 'registration_start', 'registration_end',
+            'is_cancelled',
         ]
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -95,3 +98,11 @@ class EventForm(forms.ModelForm):
                 self.add_error('registration_end', "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
 
         return cleaned_data
+
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image and hasattr(image, '__iter__') and not isinstance(image, str):
+            if len(image) > 1:
+                raise forms.ValidationError("Puoi caricare solo una immagine.")
+            image = image[0]
+        return image

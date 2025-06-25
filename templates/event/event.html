@@ -105,7 +105,7 @@
                                     {{ event.organizer.username }}
                                 {% endif %}
                             </a>
-                            {% if is_organizer and user.id == event.organizer_id %}
+                            {% if is_organizer_owner %}
                                 <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm ms-2">
                                     <i class="bi bi-pencil-square"></i> Modifica
                                 </a>

@@ -38,10 +38,16 @@ def event_detail(request, id):
     event.registration_start_formatted = event.registration_start.strftime("%d/%m/%Y %H:%M") if event.registration_start else ""
     event.registration_end_formatted = event.registration_end.strftime("%d/%m/%Y %H:%M") if event.registration_end else ""
     is_participating = False
+    is_organizer_owner = False
     if request.user.is_authenticated:
         participation = Participation.objects.filter(user=request.user, event=event).first()
         is_participating = participation is not None
-        is_organizer = request.user.groups.filter(id=2).exists()
+        is_organizer = request.user.groups.filter(name="organizer").exists()
+        user = request.user
+
+        if event.organizer_id == user.id:
+            is_organizer_owner = True
+
         if participation:
             form = ParticipationUpdateForm(user=request.user, instance=participation)
         else:
@@ -66,6 +72,7 @@ def event_detail(request, id):
             "is_organizer": is_organizer,
             "form": form,
             "participants": participants,
+            "is_organizer_owner": is_organizer_owner,
         }
     )
 
@@ -128,7 +135,7 @@ def cancel_participation(request, id):
 @login_required
 def new_event(request):
     if request.user.is_authenticated:
-        is_organizer = request.user.groups.filter(id=2).exists()
+        is_organizer = request.user.groups.filter(name="organizer").exists()
         if is_organizer:
             if request.method == 'POST':
                 form = EventForm(request.POST, request.FILES)
@@ -161,7 +168,10 @@ def manage_event(request, id):
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save(commit=False)
+            event.is_cancelled = form.cleaned_data.get('is_cancelled', False)
+            event.save()
+            form.save_m2m()
             return redirect('detail', id=event.id)
     else:
         def round_to_quarter(dt):
@@ -178,5 +188,6 @@ def manage_event(request, id):
             initial['registration_start'] = round_to_quarter(event.registration_start).strftime('%Y-%m-%dT%H:%M')
         if event.registration_end:
             initial['registration_end'] = round_to_quarter(event.registration_end).strftime('%Y-%m-%dT%H:%M')
+        initial['is_cancelled'] = event.is_cancelled
         form = EventForm(instance=event, initial=initial)
     return render(request, "event/manageEvent.html", {"form": form, "event": event})
