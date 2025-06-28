@@ -99,10 +99,6 @@ class EventForm(forms.ModelForm):
 
         return cleaned_data
 
-    def clean_image(self):
-        image = self.cleaned_data.get('image')
-        if image and hasattr(image, '__iter__') and not isinstance(image, str):
-            if len(image) > 1:
-                raise forms.ValidationError("Puoi caricare solo una immagine.")
-            image = image[0]
-        return image
+def clean_image(self):
+    image = self.cleaned_data.get('image')
+    return image

@@ -2,6 +2,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from cloudinary.models import CloudinaryField
 
 
 class Event(models.Model):
@@ -38,7 +39,7 @@ class Event(models.Model):
         help_text='Link al percorso su Maps (opzionale)'
     )
 
-    image = models.ImageField(upload_to='eventImages/', blank=True)
+    image = CloudinaryField('image', blank=True, null=True)
 
     event_type = models.CharField(
         max_length=20,
