@@ -3,6 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from cloudinary.models import CloudinaryField
+import pytz
 
 
 class Event(models.Model):
@@ -68,7 +69,8 @@ class Event(models.Model):
 
     @property
     def status(self):
-        now = timezone.now()
+        rome_tz = pytz.timezone('Europe/Rome')
+        now = timezone.localtime(timezone.now(), timezone=rome_tz)
 
         if self.is_cancelled:
             return 'annullato'
