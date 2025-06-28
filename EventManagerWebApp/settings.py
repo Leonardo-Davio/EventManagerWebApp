@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from decouple import config
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -78,24 +77,24 @@ WSGI_APPLICATION = 'EventManagerWebApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DB_ENGINE = config('DB_ENGINE', default='postgres')
+DB_ENGINE = 'postgres' # Imposta il DB engine: 'postgres' o 'sqlite'
 
 if DB_ENGINE == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST'),
-            'PORT': config('DB_PORT'),
+            'NAME': 'EventManager',
+            'USER': 'DjangoUser',
+            'PASSWORD': 'Django',
+            'HOST': 'localhost',
+            'PORT': '5433',
         }
     }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / config('DB_FILE'),
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
