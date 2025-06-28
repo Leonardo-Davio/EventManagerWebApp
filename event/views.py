@@ -42,7 +42,7 @@ def event_detail(request, id):
     if request.user.is_authenticated:
         participation = Participation.objects.filter(user=request.user, event=event).first()
         is_participating = participation is not None
-        is_organizer = request.user.groups.filter(name="organizer").exists()
+        is_organizer = request.user.groups.filter(name="Organizer").exists()
         user = request.user
 
         if event.organizer_id == user.id:
@@ -135,7 +135,7 @@ def cancel_participation(request, id):
 @login_required
 def new_event(request):
     if request.user.is_authenticated:
-        is_organizer = request.user.groups.filter(name="organizer").exists()
+        is_organizer = request.user.groups.filter(name="Organizer").exists()
         if is_organizer:
             if request.method == 'POST':
                 form = EventForm(request.POST, request.FILES)

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ttoqa(x75@11it85za!h%i)+d&7wl5mivjphuias#1#rl*56lf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'EventManagerWebApp.urls'
@@ -151,3 +152,5 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL= '/'
 LOGIN_URL = '/login/'
+
+STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
