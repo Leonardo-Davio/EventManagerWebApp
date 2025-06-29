@@ -5,7 +5,7 @@ from .models import Event, Participation
 from django.db.models import Sum
 from .forms import ParticipationForm, ParticipationUpdateForm, EventForm
 from datetime import timedelta
-
+import pytz
 
 
 def index(request):
@@ -22,21 +22,33 @@ def index(request):
         .order_by('num_participates')[:3]
     )
 
+    rome_tz = pytz.timezone('Europe/Rome')
     for event in upcoming_events:
-        event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
+        date = timezone.localtime(event.date, rome_tz)
+        event.date_formatted = date.strftime("%d/%m/%Y %H:%M")
     for event in popular_events:
-        event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
+        date = timezone.localtime(event.date, rome_tz)
+        event.date_formatted = date.strftime("%d/%m/%Y %H:%M")
 
     return render(request, "event/homepage.html", {
         "upcoming_events": upcoming_events,
         "popular_events": popular_events,
     })
 
+
 def event_detail(request, id):
     event = get_object_or_404(Event, id=id)
-    event.date_formatted = event.date.strftime("%d/%m/%Y %H:%M")
-    event.registration_start_formatted = event.registration_start.strftime("%d/%m/%Y %H:%M") if event.registration_start else ""
-    event.registration_end_formatted = event.registration_end.strftime("%d/%m/%Y %H:%M") if event.registration_end else ""
+
+    # Set event dating
+    rome_tz = pytz.timezone('Europe/Rome')
+    date = timezone.localtime(event.date, rome_tz)
+    reg_start = timezone.localtime(event.registration_start, rome_tz)
+    reg_end = timezone.localtime(event.registration_end, rome_tz)
+    event.date_formatted = date.strftime("%d/%m/%Y %H:%M")
+    event.registration_start_formatted = reg_start.strftime("%d/%m/%Y %H:%M")
+    event.registration_end_formatted = reg_end.strftime("%d/%m/%Y %H:%M")
+
+    # Set User
     is_participating = False
     is_organizer_owner = False
     if request.user.is_authenticated:
@@ -76,8 +88,10 @@ def event_detail(request, id):
         }
     )
 
+
 def list_event(request):
     today = timezone.now()
+    rome_tz = pytz.timezone('Europe/Rome')
     events = (
         Event.objects.filter(date__gte=today)
         .annotate(num_participates=Sum('registrations__num_participates'))
@@ -90,9 +104,11 @@ def list_event(request):
     )
 
     for event in events:
-        event.date_formatted = event.date.strftime("%d/%m/%Y")
+        date = timezone.localtime(event.date, rome_tz)
+        event.date_formatted = date.strftime("%d/%m/%Y")
     for event in events_passed:
-        event.date_formatted = event.date.strftime("%d/%m/%Y")
+        date = timezone.localtime(event.date, rome_tz)
+        event.date_formatted = date.strftime("%d/%m/%Y")
 
     return render(request, "event/listEvents.html", {
         "events": events,
@@ -148,6 +164,7 @@ def new_event(request):
                 from django.utils import timezone
                 now = timezone.now()
                 tomorrow_9 = (now + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+
                 def round_to_next_quarter(dt):
                     minute = (dt.minute + 14) // 15 * 15
                     if minute == 60:
@@ -155,14 +172,17 @@ def new_event(request):
                     else:
                         dt = dt.replace(minute=minute, second=0, microsecond=0)
                     return dt
+
                 tomorrow_9 = round_to_next_quarter(tomorrow_9)
                 form = EventForm(initial={'date': tomorrow_9.strftime('%Y-%m-%dT%H:%M')})
             return render(request, "event/newEvent.html", {"form": form})
     return redirect('events')
 
+
 @login_required
 def manage_event(request, id):
     event = get_object_or_404(Event, id=id)
+    rome_tz = pytz.timezone('Europe/Rome')
     if event.organizer != request.user:
         return redirect('detail', id=event.id)
     if request.method == 'POST':
@@ -181,13 +201,17 @@ def manage_event(request, id):
             else:
                 dt = dt.replace(minute=minute, second=0, microsecond=0)
             return dt
+
         initial = {}
         if event.date:
-            initial['date'] = round_to_quarter(event.date).strftime('%Y-%m-%dT%H:%M')
+            date = timezone.localtime(event.date, rome_tz)
+            initial['date'] = round_to_quarter(date).strftime('%Y-%m-%dT%H:%M')
         if event.registration_start:
-            initial['registration_start'] = round_to_quarter(event.registration_start).strftime('%Y-%m-%dT%H:%M')
+            reg_start = timezone.localtime(event.registration_start, rome_tz)
+            initial['registration_start'] = round_to_quarter(reg_start).strftime('%Y-%m-%dT%H:%M')
         if event.registration_end:
-            initial['registration_end'] = round_to_quarter(event.registration_end).strftime('%Y-%m-%dT%H:%M')
+            reg_end = timezone.localtime(event.registration_end, rome_tz)
+            initial['registration_end'] = round_to_quarter(reg_end).strftime('%Y-%m-%dT%H:%M')
         initial['is_cancelled'] = event.is_cancelled
         form = EventForm(instance=event, initial=initial)
     return render(request, "event/manageEvent.html", {"form": form, "event": event})

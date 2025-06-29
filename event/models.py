@@ -70,17 +70,22 @@ class Event(models.Model):
     @property
     def status(self):
         rome_tz = pytz.timezone('Europe/Rome')
-        now = timezone.localtime(timezone.now(), timezone=rome_tz)
+        now = timezone.localtime(timezone.now(), rome_tz)
+        reg_start = timezone.localtime(self.registration_start, rome_tz)
+        reg_end = timezone.localtime(self.registration_end, rome_tz)
+        event_date = timezone.localtime(self.date, rome_tz)
 
         if self.is_cancelled:
             return 'annullato'
-        if now > self.date:
+        if now > event_date:
             return 'passato'
-        if now < self.registration_start:
+        if now < reg_start:
             return 'iscrizioni_non_aperte'
-        if self.registration_start <= now <= self.registration_end:
+        if reg_start <= now <= reg_end:
             return 'iscrizioni_aperte'
-        return 'iscrizioni_chiuse'
+        if now > reg_end:
+            return 'iscrizioni_chiuse'
+        return 'errore_logica'
 
 
 class Participation(models.Model):

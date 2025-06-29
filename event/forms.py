@@ -1,6 +1,7 @@
 from django import forms
 from .models import Participation, Event
 
+
 class ParticipationForm(forms.ModelForm):
     accompagnato = forms.IntegerField(
         min_value=1,
@@ -26,6 +27,7 @@ class ParticipationForm(forms.ModelForm):
             'motorcycle': forms.Select(attrs={'class': 'form-select'}),
         }
 
+
 class ParticipationUpdateForm(forms.ModelForm):
     accompagnato = forms.IntegerField(
         min_value=1,
@@ -42,7 +44,8 @@ class ParticipationUpdateForm(forms.ModelForm):
             self.fields['motorcycle'].queryset = Motorcycle.objects.filter(owner=user)
         if instance is not None and hasattr(instance, "num_participates"):
             self.fields['accompagnato'].initial = instance.num_participates
-            self.fields['motorcycle'].initial = instance.motorcycle
+            if hasattr(instance, "motorcycle"):
+                self.fields['motorcycle'].initial = instance.motorcycle
 
     class Meta:
         model = Participation
@@ -50,6 +53,7 @@ class ParticipationUpdateForm(forms.ModelForm):
         widgets = {
             'motorcycle': forms.Select(attrs={'class': 'form-select'}),
         }
+
 
 class EventForm(forms.ModelForm):
     is_cancelled = forms.BooleanField(required=False, label="Annulla evento")
@@ -69,19 +73,36 @@ class EventForm(forms.ModelForm):
 
     def clean(self):
         from django.utils import timezone
+        import pytz
         from datetime import timedelta
+
         cleaned_data = super().clean()
         date = cleaned_data.get('date')
         registration_start = cleaned_data.get('registration_start')
         registration_end = cleaned_data.get('registration_end')
+
+        rome_tz = pytz.timezone('Europe/Rome')
+        if date:
+            cleaned_data['date'] = rome_tz.localize(date.replace(tzinfo=None))
+        if registration_start:
+            cleaned_data['registration_start'] = rome_tz.localize(registration_start.replace(tzinfo=None))
+        if registration_end:
+            cleaned_data['registration_end'] = rome_tz.localize(registration_end.replace(tzinfo=None))
+
         now = timezone.now()
+        instance = getattr(self, 'instance', None)
+
+        skip_reg_start_check = (
+                instance and instance.pk and
+                registration_start == getattr(instance, 'registration_start', None)
+        )
 
         if date:
             tomorrow = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
             if date < tomorrow:
                 self.add_error('date', "La data dell'evento deve essere almeno domani.")
 
-        if registration_start:
+        if registration_start and not skip_reg_start_check:
             if registration_start < now:
                 self.add_error('registration_start', "Le iscrizioni possono aprirsi solo da ora in poi.")
             if registration_start.minute % 15 != 0:
@@ -95,9 +116,11 @@ class EventForm(forms.ModelForm):
             if registration_end > date:
                 self.add_error('registration_end', "La chiusura iscrizioni non può essere dopo l'inizio dell'evento.")
             if registration_end < registration_start:
-                self.add_error('registration_end', "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
+                self.add_error('registration_end',
+                               "La chiusura iscrizioni non può essere prima dell'apertura iscrizioni.")
 
         return cleaned_data
+
 
 def clean_image(self):
     image = self.cleaned_data.get('image')
