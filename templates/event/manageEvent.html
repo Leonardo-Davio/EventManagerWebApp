@@ -86,7 +86,7 @@
             if (eventDateInput) {
                 let eventDate = new Date(eventDateInput.value);
                 if (eventDate < now.setHours(0, 0, 0, 0)) {
-                    eventDateInput.disabled = true;
+                    eventDateInput.readOnly = true;
                     const info = document.createElement('div');
                     info.className = 'form-text text-danger mb-2';
                     info.textContent = "La data dell'evento è già passata e non può essere modificata.";
@@ -98,7 +98,7 @@
             if (regStartInput) {
                 let regStart = new Date(regStartInput.value);
                 if (now >= regStart) {
-                    regStartInput.disabled = true;
+                    regStartInput.readOnly = true;
                     const info = document.createElement('div');
                     info.className = 'form-text text-danger mb-2';
                     info.textContent = "L'inizio iscrizioni è già passato e non può essere modificato.";
