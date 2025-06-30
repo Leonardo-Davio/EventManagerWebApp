@@ -1,53 +1,61 @@
 # Motorcycle Events Manager
 
-**Motorcycle Events Manager** è una moderna web app pensata per coordinare gli eventi di una community di motociclisti.
-Sviluppata in Python con Django e arricchita da Bootstrap per il front-end, l’app sfrutta PostgreSQL come database relazionale.
-Il deploy è gestito su Railway, mentre Cloudinary si occupa dell’hosting e della gestione dei media.
+**Motorcycle Events Manager** is a modern web app designed to coordinate events for a community of motorcyclists.
+Developed in Python with Django and enriched with Bootstrap for the front-end, the app uses PostgreSQL as a relational database.
+The deployment is managed on Railway, while Cloudinary takes care of hosting and media management.
 
 ---
 
-## Architettura e tecnologie
+## Architecture and technologies
 
-L’app si basa su un’architettura MVC: Django regola la logica di business e le interazioni con il database PostgreSQL,
-mentre Bootstrap 5 garantisce un’interfaccia responsive e accessibile da desktop e mobile. Railway assicura un deploy continuo,
-con rollback e monitoring integrati, e Cloudinary consente caricamenti rapidi e sicuri delle immagini degli eventi.
-
----
-
-## Panoramica delle funzionalità
-
-Ogni sezione dell’app è pensata per offrire un’esperienza semplice e immediata:
-
-- **Home page**: un’hero section introduce il progetto con titolo, slogan e inviti all’azione; subito sotto, 
-i prossimi tre eventi in calendario e quelli più popolari per iscrizioni.
-- **Calendario eventi**: una vista in lista con filtri per categoria (motoraduni, motogiri, tour enogastronomici, track day)
-e per stato delle iscrizioni (aperte, chiuse, non ancora aperte, annullate). È possibile definire un intervallo di date
-e ordinare gli eventi per data o numero di partecipanti.
-- **Scheda evento**: ogni evento ha un titolo, descrizione estesa, data/ora, location di partenza (con link a Google Maps),
-immagine di copertina e, se disponibile, il tracciato GPS. Le iscrizioni si attivano e si chiudono secondo un calendario
-prestabilito, e l’organizzatore può cancellare l’evento in qualsiasi momento.
-- **Gestione iscrizioni**: solo utenti autenticati possono registrarsi; il profilo prevede l’inserimento obbligatorio
-della moto e consente di segnalare il numero di accompagnatori. Le conferme vengono inviate all’indirizzo email registrato.
-- **Profilo utente**: riepilogo dei dati personali, della moto e degli eventi a cui si è iscritti, con accesso facilitato
-alla modifica dei propri dettagli.
+The app is based on an MVC architecture: Django governs the business logic and interactions with the PostgreSQL database,
+while Bootstrap 5 guarantees a responsive interface accessible from desktop and mobile. Railway ensures continuous deployment,
+with integrated rollback and monitoring, and Cloudinary allows fast and secure uploads of event images.
 
 ---
 
-## Flusso utente
+## Features overview
 
-1. **Registrazione/Login**: l’utente crea un account fornendo email e password, oppure accede se già registrato.
-2. **Configurazione profilo**: inserimento obbligatorio dei dati relativi alla moto (marca, modello, cilindrata).
-3. **Scoperta eventi**: navigazione nel calendario o ricerca tramite filtri per individuare l’evento di interesse.
-4. **Iscrizione**: scelta dell’evento, inserimento del numero di partecipanti e conferma dell’iscrizione nel periodo previsto.
+Each section of the app is designed to offer a simple and immediate experience:
 
+- **Home page**: a hero section introduces the project with title, slogan and calls to action; immediately below,
+the next three events in the calendar and the most popular ones for registrations.
+- **Event calendar**: a list view with filters by category (motorcycle rallies, motorcycle tours, food and wine tours, track days)
+and by registration status (open, closed, not yet open, cancelled). It is possible to define a date range
+and sort the events by date or number of participants.
+- **Event card**: each event has a title, extended description, date/time, starting location (with link to Google Maps),
+cover image and, if available, the GPS track. Registrations are activated and closed according to a pre-established
+calendar, and the organizer can cancel the event at any time.
+- **Registration management**: only authenticated users can register; the profile requires the mandatory
+entry of the motorbike and allows you to indicate the number of companions.
+- **User profile**: summary of personal data, motorcycle and events registered for, with easy access
+to modify your details.
 
 ---
 
-> 🌐 Prova subito l’applicazione su Railway:  
+## User flow
+
+1. **Registration/Login**: the user creates an account by providing email and password, or logs in if already registered.
+2. **Profile configuration**: mandatory entry of motorcycle data (brand, model, engine capacity).
+3. **Event discovery**: navigation in the calendar or search using filters to find the event of interest.
+4. **Registration**: choice of event, entry of the number of participants and confirmation of registration in the expected period.
+
+---
+
+> 🌐 Try the application now on Railway:
 > https://web-production-dac68.up.railway.app/
 
 ---
-## File del progetto
 
-Usare questo link per ottenere i file sorgente, con anche il database popolato ed alcune configurazioni.
-> link.com
+## Project files
+
+Use this link to get the source files, with the populated database and some configurations.
+> [Motorcycle event manager - source file](https://github.com/Leonardo-Davio/EventManagerWebApp/releases/tag/RawSource)
+
+--- 
+
+## DISCLAIMER
+
+This site was created exclusively for academic purposes as part of the university project relating to the Multimedia Design and Production course at the University of Florence. The information provided here is purely indicative and does not in any way bind the University Bodies; therefore, no responsibility is assumed for the use that will be made of it.
+
+For any clarification or further information, you can contact the project manager at leonardo.davio@edu.unifi.it.
