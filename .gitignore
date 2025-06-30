@@ -1,5 +1,2 @@
-.env
 .venv
-media
-db.sqlite3
 PassaggioDiDB.md
