@@ -29,8 +29,8 @@
                             {{ form.registration_start|as_crispy_field }}
                             {{ form.registration_end|as_crispy_field }}
                             <div class="form-check mb-3">
-                                {{ form.is_cancelled }}
-                                <label class="form-check-label" for="{{ form.is_cancelled.id_for_label }}">
+                                {{ form.is_annulled }}
+                                <label class="form-check-label" for="{{ form.is_annulled.id_for_label }}">
                                     Annulla evento
                                 </label>
                             </div>
@@ -38,9 +38,30 @@
                                 <a href="{% url 'detail' event.id %}" class="btn btn-secondary">
                                     <i class="bi bi-arrow-left"></i> Annulla
                                 </a>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteEventModal">
+                                    <i class="bi bi-trash"></i> Elimina evento
+                                </button>
                                 <button type="submit" class="btn btn-warning">
                                     <i class="bi bi-pencil-square"></i> Salva modifiche
                                 </button>
+                            </div>
+                            <!-- Modal to confirm elimination event -->
+                            <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="deleteEventModalLabel">Conferma eliminazione evento</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    Sei sicuro di voler eliminare definitivamente questo evento? Questa azione non può essere annullata.
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                    <button type="submit" name="delete_event" value="1" class="btn btn-danger">Elimina definitivamente</button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                         </form>
                     </div>

@@ -18,7 +18,7 @@ def index(request):
     popular_events = (
         Event.objects.filter(date__gte=today)
         .annotate(num_participates=Sum('registrations__num_participates'))
-        .filter(registration_start__lte=today, registration_end__gte=today, is_cancelled=False)
+        .filter(registration_start__lte=today, registration_end__gte=today, is_annulled=False)
         .order_by('num_participates')[:3]
     )
 
@@ -186,10 +186,13 @@ def manage_event(request, id):
     if event.organizer != request.user:
         return redirect('detail', id=event.id)
     if request.method == 'POST':
+        if 'delete_event' in request.POST:
+            event.delete()
+            return redirect('events')
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
             event = form.save(commit=False)
-            event.is_cancelled = form.cleaned_data.get('is_cancelled', False)
+            event.is_annulled = form.cleaned_data.get('is_annulled', False)
             event.save()
             form.save_m2m()
             return redirect('detail', id=event.id)
@@ -212,6 +215,6 @@ def manage_event(request, id):
         if event.registration_end:
             reg_end = timezone.localtime(event.registration_end, rome_tz)
             initial['registration_end'] = round_to_quarter(reg_end).strftime('%Y-%m-%dT%H:%M')
-        initial['is_cancelled'] = event.is_cancelled
+        initial['is_annulled'] = event.is_annulled
         form = EventForm(instance=event, initial=initial)
     return render(request, "event/manageEvent.html", {"form": form, "event": event})

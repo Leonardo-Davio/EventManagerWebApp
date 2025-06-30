@@ -58,7 +58,7 @@ class Event(models.Model):
         help_text='Quando scadono le iscrizioni'
     )
 
-    is_cancelled = models.BooleanField(
+    is_annulled = models.BooleanField(
         default=False,
         verbose_name="Annullato dall'organizzatore",
         help_text="Se l'organizzatore ha cancellato l'evento"
@@ -75,7 +75,7 @@ class Event(models.Model):
         reg_end = timezone.localtime(self.registration_end, rome_tz)
         event_date = timezone.localtime(self.date, rome_tz)
 
-        if self.is_cancelled:
+        if self.is_annulled:
             return 'annullato'
         if now > event_date:
             return 'passato'

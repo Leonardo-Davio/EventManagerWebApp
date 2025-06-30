@@ -56,20 +56,24 @@ class ParticipationUpdateForm(forms.ModelForm):
 
 
 class EventForm(forms.ModelForm):
-    is_cancelled = forms.BooleanField(required=False, label="Annulla evento")
+    is_annulled = forms.BooleanField(required=False, label="Annulla evento")
 
     class Meta:
         model = Event
         fields = [
             'title', 'description', 'date', 'location', 'location_link',
             'maps_link', 'image', 'event_type', 'registration_start', 'registration_end',
-            'is_cancelled',
         ]
         widgets = {
             'date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'registration_start': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'registration_end': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not kwargs.get('initial', {}).get('show_is_annulled', False):
+            self.fields.pop('is_annulled', None)
 
     def clean(self):
         from django.utils import timezone
