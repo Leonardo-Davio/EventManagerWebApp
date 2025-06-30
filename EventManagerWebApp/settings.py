@@ -90,6 +90,7 @@ WSGI_APPLICATION = 'EventManagerWebApp.wsgi.application'
 
 
 if os.environ.get('DB_LIVE') in ['True', True]:
+    print("DB -> railway posgresql")
     DATABASES = { #public
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -100,7 +101,8 @@ if os.environ.get('DB_LIVE') in ['True', True]:
             'PORT': os.environ.get('DB_PORT'),
         }
     }
-elif os.environ.get('DB_LIVE') in ['True', True] and os.environ.get('TYPE_DB') in ['Sql', True]:
+elif os.environ.get('DB_LIVE') in ['False', True] and os.environ.get('TYPE_DB') in ['Sql', True]:
+    print("DB -> local sqlite3")
     DATABASES = { #local sqlite
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -108,6 +110,7 @@ elif os.environ.get('DB_LIVE') in ['True', True] and os.environ.get('TYPE_DB') i
         }
     }
 else:
+    print("DB -> local postgresql")
     DATABASES = { #local postgres
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

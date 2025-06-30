@@ -30,7 +30,12 @@
                                          alt="{{ event.title }}">
                                 {% endif %}
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <h5 class="card-title">
+                                        {{ event.title }}
+                                        {% if event.status == "annullato" %}
+                                            <span class="badge bg-danger ms-2">Evento annullato</span>
+                                        {% endif %}
+                                    </h5>
                                     <p class="card-text">Data: {{ event.date_formatted }}</p>
                                     <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
                                     <a href="{% url 'detail' event.id %}" class="btn btn-primary btn-sm me-2">Dettagli</a>
@@ -63,7 +68,12 @@
                                          alt="{{ event.title }}">
                                 {% endif %}
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ event.title }}</h5>
+                                    <h5 class="card-title">
+                                        {{ event.title }}
+                                        {% if event.status == "annullato" %}
+                                            <span class="badge bg-danger ms-2">Evento annullato</span>
+                                        {% endif %}
+                                    </h5>
                                     <p class="card-text">Data: {{ event.date_formatted }}</p>
                                     <p class="card-text"><strong>Luogo:</strong> {{ event.location }}</p>
                                     <a href="{% url 'detail' event.id %}"

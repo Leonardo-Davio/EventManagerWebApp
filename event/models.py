@@ -2,9 +2,11 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from cloudinary.models import CloudinaryField
 import pytz
+import os
 
+# Need for set the image saving on local or on cloud
+DB_LIVE = os.environ.get('DB_LIVE', 'False') == 'True'
 
 class Event(models.Model):
     EVENT_TYPE_CHOICES = [
@@ -40,7 +42,11 @@ class Event(models.Model):
         help_text='Link al percorso su Maps (opzionale)'
     )
 
-    image = CloudinaryField('image', blank=True, null=True)
+    if DB_LIVE:
+        from cloudinary.models import CloudinaryField
+        image = CloudinaryField('image', blank=True, null=True)
+    else:
+        image = models.ImageField(upload_to='eventImages/', blank=True, null=True)
 
     event_type = models.CharField(
         max_length=20,

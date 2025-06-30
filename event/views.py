@@ -11,15 +11,15 @@ import pytz
 def index(request):
     today = timezone.now()
     upcoming_events = (
-        Event.objects.filter(date__gte=today)
+        Event.objects.filter(date__gte=today, is_annulled=False)
         .annotate(num_participates=Sum('registrations__num_participates'))
         .order_by('date')[:3]
     )
     popular_events = (
-        Event.objects.filter(date__gte=today)
+        Event.objects.filter(date__gte=today, is_annulled=False)
         .annotate(num_participates=Sum('registrations__num_participates'))
-        .filter(registration_start__lte=today, registration_end__gte=today, is_annulled=False)
-        .order_by('num_participates')[:3]
+        .filter(registration_start__lte=today, registration_end__gte=today)
+        .order_by('-num_participates')[:3]
     )
 
     rome_tz = pytz.timezone('Europe/Rome')

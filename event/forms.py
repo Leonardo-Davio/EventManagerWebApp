@@ -72,8 +72,6 @@ class EventForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not kwargs.get('initial', {}).get('show_is_annulled', False):
-            self.fields.pop('is_annulled', None)
 
     def clean(self):
         from django.utils import timezone
